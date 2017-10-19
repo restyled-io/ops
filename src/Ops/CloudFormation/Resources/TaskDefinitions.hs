@@ -49,8 +49,8 @@ taskDefinitionResources =
                         & ecstdkvpName ?~ "LOG_LEVEL"
                         & ecstdkvpValue ?~ Ref "AppsLogLevel"
                     ]
-                & ecstdcdMemoryReservation ?~ Literal 128       -- Soft
-                & ecstdcdMemory ?~ Literal 256                  -- Hard
+                & ecstdcdMemoryReservation ?~ Literal 16        -- Soft/Reservation
+                & ecstdcdMemory ?~ Literal 128                  -- Hard
                 & ecstdcdPortMappings ?~
                     [ ecsTaskDefinitionPortMapping
                         & ecstdpmContainerPort ?~ Literal 3000
@@ -115,8 +115,8 @@ taskDefinitionResources =
                         & ecstdkvpName ?~ "LOG_LEVEL"
                         & ecstdkvpValue ?~ Ref "AppsLogLevel"
                     ]
-                & ecstdcdMemoryReservation ?~ Literal 128       -- Soft
-                & ecstdcdMemory ?~ Literal 256                  -- Hard
+                & ecstdcdMemoryReservation ?~ Literal 16        -- Soft/Reservation
+                & ecstdcdMemory ?~ Literal 128                  -- Hard
                 & ecstdcdMountPoints ?~
                     [ ecsTaskDefinitionMountPoint
                         & ecstdmpSourceVolume ?~ "tmp"

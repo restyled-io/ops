@@ -1,5 +1,7 @@
 all: setup build lint test
 
+release: build lint test image.build image.release
+
 .PHONY: setup
 setup:
 	stack setup
@@ -22,7 +24,6 @@ test:
 .PHONY: install
 install:
 	stack install
-
 
 .PHONY: image.build
 image.build:

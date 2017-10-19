@@ -30,4 +30,4 @@ image.build:
 
 .PHONY: image.release
 image.release:
-	docker push restyled/ops .
+	docker push restyled/ops

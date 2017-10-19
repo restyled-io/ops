@@ -16,8 +16,10 @@ import Ops.AWS
 import Ops.CloudFormation.Parameters (cfParameters)
 import Options.Generic
 import Stratosphere (parameterName, unParameters)
+import System.Exit (die)
 import qualified Data.Map as M
 import qualified Network.AWS.CloudFormation as AWS
+import qualified Network.AWS.Waiter as AWS
 
 data DeployOptions = DeployOptions
     { doStackName :: Text
@@ -58,8 +60,12 @@ updateStack name params = do
             ]
 
     putStrLn "Stack updated, awaiting..."
-    print =<< awaitAWS AWS.stackCreateComplete
+    result <- awaitAWS AWS.stackCreateComplete
         (AWS.describeStacks & AWS.dStackName ?~ name)
+
+    case result of
+        AWS.AcceptSuccess -> putStrLn "Success."
+        _ -> die "Stack update failed, see AWS console for details."
   where
     toParameters = map (uncurry toParameter)
     toParameter k mv = AWS.parameter & AWS.pParameterKey ?~ k & maybe

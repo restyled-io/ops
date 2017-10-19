@@ -52,7 +52,10 @@ updateStack name params = do
         $ AWS.updateStack name
         & AWS.usUsePreviousTemplate ?~ True
         & AWS.usParameters .~ toParameters params
-        & AWS.usCapabilities .~ [AWS.CapabilityIAM]
+        & AWS.usCapabilities .~
+            [ AWS.CapabilityIAM
+            , AWS.CapabilityNamedIAM
+            ]
 
     putStrLn "Stack updated, awaiting..."
     print =<< awaitAWS AWS.stackCreateComplete

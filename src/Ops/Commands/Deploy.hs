@@ -37,8 +37,8 @@ instance ParseRecord DeployOptions where
 
 deployCommand :: DeployOptions -> IO ()
 deployCommand DeployOptions{..} = updateStack doStackName $ withUsePreviousParameters
-    [ ("ImageName", doImageName)
-    , ("ImageTag", Just doImageTag)
+    [ ("AppsImageName", doImageName)
+    , ("AppsImageTag", Just doImageTag)
     ]
 
 withUsePreviousParameters :: [(Text, Maybe Text)] -> [(Text, Maybe Text)]

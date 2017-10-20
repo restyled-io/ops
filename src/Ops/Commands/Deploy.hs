@@ -60,7 +60,7 @@ updateStack name params = do
             ]
 
     putStrLn "Stack updated, awaiting..."
-    result <- awaitAWS AWS.stackCreateComplete
+    result <- awaitAWS AWS.stackUpdateComplete
         (AWS.describeStacks & AWS.dStackName ?~ name)
 
     case result of

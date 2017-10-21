@@ -19,10 +19,11 @@ library:
   - bytestring
   - containers
   - lens
+  - mtl
   - optparse-generic
+  - pushover
+  - shakespeare
   - stratosphere
-  - stratosphere
-  - text
   - text
   - unordered-containers
 

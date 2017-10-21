@@ -14,6 +14,7 @@ import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import Ops.AWS
 import Ops.CloudFormation.Parameters (cfParameters)
+import Ops.Notify
 import Options.Generic
 import Stratosphere (parameterName, unParameters)
 import System.Exit (die)
@@ -38,10 +39,14 @@ instance ParseRecord DeployOptions where
     parseRecord = parseRecordWithModifiers $ unPrefixLispCaseModifiers "do"
 
 deployCommand :: DeployOptions -> IO ()
-deployCommand DeployOptions{..} = updateStack doStackName $ withUsePreviousParameters
-    [ ("AppsImageName", doImageName)
-    , ("AppsImageTag", Just doImageTag)
-    ]
+deployCommand DeployOptions{..} = do
+    updateStack doStackName $ withUsePreviousParameters
+        [ ("AppsImageName", doImageName)
+        , ("AppsImageTag", Just doImageTag)
+        ]
+
+    either die return =<< sendNotification
+        (DeploySuccess doStackName doImageName doImageTag)
 
 withUsePreviousParameters :: [(Text, Maybe Text)] -> [(Text, Maybe Text)]
 withUsePreviousParameters = M.toList . M.fromList . (knownParameters ++)

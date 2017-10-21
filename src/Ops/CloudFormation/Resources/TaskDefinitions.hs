@@ -23,7 +23,7 @@ taskDefinitionResources =
                 & ecstdcdEnvironment ?~
                     [ ecsTaskDefinitionKeyValuePair
                         & ecstdkvpName ?~ "APPROOT"
-                        & ecstdkvpValue ?~ ""
+                        & ecstdkvpValue ?~ Join "" ["https://", fqdnRef]
                     , ecsTaskDefinitionKeyValuePair
                         & ecstdkvpName ?~ "DATABASE_URL"
                         & ecstdkvpValue ?~ databaseURL

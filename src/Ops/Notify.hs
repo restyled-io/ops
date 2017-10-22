@@ -18,7 +18,7 @@ import qualified Data.Text as T
 
 data Notification
     -- | Deployed Stack, Image Name, & Tag
-    = DeploySuccess Text (Maybe Text) Text
+    = DeploySuccess Text Text Text
 
 sendNotification :: Notification -> IO (Either String ())
 sendNotification n = runExceptT $ do
@@ -30,11 +30,9 @@ getToken :: String -> ExceptT String IO PushoverToken
 getToken = ExceptT . (first errorMessage . makeToken . T.pack <$>) . getEnv
 
 toMessage :: Notification -> Message
-toMessage (DeploySuccess stack mname tag) = text [st|
-Deployment of #{stack}, image #{name}#{tag} succeeded
+toMessage (DeploySuccess stack name tag) = text [st|
+Deployment of #{stack}, image #{name}:#{tag} succeeded
 |]
-  where
-    name = maybe "" (<> ":") mname
 
 fromResponse :: Response -> ExceptT String IO ()
 fromResponse (Response Success _) = pure ()

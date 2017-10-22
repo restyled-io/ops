@@ -24,7 +24,7 @@ import qualified Network.AWS.Waiter as AWS
 
 data DeployOptions = DeployOptions
     { doStackName :: Text
-    , doImageName :: Maybe Text
+    , doImageName :: Text
     , doImageTag :: Text
     }
     deriving Generic
@@ -41,7 +41,7 @@ instance ParseRecord DeployOptions where
 deployCommand :: DeployOptions -> IO ()
 deployCommand DeployOptions{..} = do
     updateStack doStackName $ withUsePreviousParameters
-        [ ("AppsImageName", doImageName)
+        [ ("AppsImageName", Just doImageName)
         , ("AppsImageTag", Just doImageTag)
         ]
 

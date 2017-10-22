@@ -12,6 +12,8 @@ import Control.Monad (void)
 import Data.List (stripPrefix)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
+import Network.AWS.CloudFormation
+import Network.AWS.Waiter
 import Ops.AWS
 import Ops.CloudFormation.Parameters (cfParameters)
 import Ops.Notify
@@ -19,8 +21,6 @@ import Options.Generic
 import Stratosphere (parameterName, unParameters)
 import System.Exit (die)
 import qualified Data.Map as M
-import qualified Network.AWS.CloudFormation as AWS
-import qualified Network.AWS.Waiter as AWS
 
 data DeployOptions = DeployOptions
     { doStackName :: Text
@@ -40,7 +40,7 @@ instance ParseRecord DeployOptions where
 
 deployCommand :: DeployOptions -> IO ()
 deployCommand DeployOptions{..} = do
-    updateStack doStackName $ withUsePreviousParameters
+    deployStack doStackName $ withUsePreviousParameters
         [ ("AppsImageName", Just doImageName)
         , ("AppsImageTag", Just doImageTag)
         ]
@@ -53,26 +53,26 @@ withUsePreviousParameters = M.toList . M.fromList . (knownParameters ++)
   where
     knownParameters = map ((, Nothing) . parameterName) $ unParameters cfParameters
 
-updateStack :: Text -> [(Text, Maybe Text)] -> IO ()
-updateStack name params = do
-    void $ runAWS
-        $ AWS.updateStack name
-        & AWS.usUsePreviousTemplate ?~ True
-        & AWS.usParameters .~ toParameters params
-        & AWS.usCapabilities .~
-            [ AWS.CapabilityIAM
-            , AWS.CapabilityNamedIAM
+deployStack :: Text -> [(Text, Maybe Text)] -> IO ()
+deployStack name params = do
+    void $ runAWS $ send
+        $ updateStack name
+        & usUsePreviousTemplate ?~ True
+        & usParameters .~ toParameters params
+        & usCapabilities .~
+            [ CapabilityIAM
+            , CapabilityNamedIAM
             ]
 
     putStrLn "Stack updated, awaiting..."
-    result <- awaitAWS AWS.stackUpdateComplete
-        (AWS.describeStacks & AWS.dStackName ?~ name)
+    result <- runAWS $ await stackUpdateComplete
+        (describeStacks & dStackName ?~ name)
 
     case result of
-        AWS.AcceptSuccess -> putStrLn "Success."
+        AcceptSuccess -> putStrLn "Success."
         _ -> die "Stack update failed, see AWS console for details."
   where
     toParameters = map (uncurry toParameter)
-    toParameter k mv = AWS.parameter & AWS.pParameterKey ?~ k & maybe
-        (AWS.pUsePreviousValue ?~ True)
-        (AWS.pParameterValue ?~) mv
+    toParameter k mv = parameter & pParameterKey ?~ k & maybe
+        (pUsePreviousValue ?~ True)
+        (pParameterValue ?~) mv

@@ -1,4 +1,5 @@
-name:    restyled-ops
+---
+name: restyled-ops
 version: "0.0.0"
 
 # Dependencies shared in *all* targets
@@ -8,35 +9,35 @@ dependencies:
 library:
   source-dirs: src
   ghc-options:
-  - -Wall
-  - -O2
+    - -Wall
+    - -O2
   dependencies:
-  - aeson
-  - aeson-qq
-  - amazonka
-  - amazonka-cloudformation
-  - amazonka-core
-  - bytestring
-  - containers
-  - lens
-  - mtl
-  - optparse-generic
-  - pushover
-  - shakespeare
-  - stratosphere
-  - text
-  - unordered-containers
+    - aeson
+    - aeson-qq
+    - amazonka
+    - amazonka-cloudformation
+    - amazonka-core
+    - bytestring
+    - containers
+    - lens
+    - mtl
+    - optparse-generic
+    - pushover
+    - shakespeare
+    - stratosphere
+    - text
+    - unordered-containers
 
 executables:
   restyled-ops:
     main: main.hs
     source-dirs: app
     ghc-options:
-    - -Wall
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+      - -Wall
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
-    - restyled-ops
-    - optparse-applicative
-    - optparse-generic
+      - restyled-ops
+      - optparse-applicative
+      - optparse-generic

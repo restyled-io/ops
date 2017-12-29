@@ -41,3 +41,9 @@ executables:
       - restyled-ops
       - optparse-applicative
       - optparse-generic
+
+tests:
+  doctest:
+    main: DocTest.hs
+    dependencies:
+      - doctest

@@ -1,8 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 module Ops.Notify
-    ( Notification(..)
-    , sendNotification
+    ( sendNotification
     ) where
 
 import Control.Monad ((<=<))
@@ -10,29 +8,19 @@ import Control.Monad.Except
 import Data.Bifunctor (first)
 import Data.Monoid ((<>))
 import Data.Text (Text)
+import qualified Data.Text as T
 import Network.Pushover
 import System.Environment (getEnv)
 import System.IO.Error (tryIOError)
-import Text.Shakespeare.Text (st)
-import qualified Data.Text as T
 
-data Notification
-    -- | Deployed Stack, Image Name, & Tag
-    = DeploySuccess Text Text Text
-
-sendNotification :: Notification -> IO (Either String ())
-sendNotification n = runExceptT $ do
+sendNotification :: Text -> IO (Either String ())
+sendNotification msg = runExceptT $ do
     aKey <- getToken "PUSHOVER_API_KEY"
     uKey <- getToken "PUSHOVER_USER_KEY"
-    fromResponse <=< tryE $ sendMessage aKey uKey $ toMessage n
+    fromResponse <=< tryE $ sendMessage aKey uKey $ text msg
 
 getToken :: String -> ExceptT String IO PushoverToken
 getToken = ExceptT . (first errorMessage . makeToken . T.pack <$>) . getEnv
-
-toMessage :: Notification -> Message
-toMessage (DeploySuccess stack name tag) = text [st|
-Deployment of #{stack}, image #{name}:#{tag} succeeded
-|]
 
 fromResponse :: Response -> ExceptT String IO ()
 fromResponse (Response Success _) = pure ()

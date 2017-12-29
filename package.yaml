@@ -21,6 +21,7 @@ library:
     - containers
     - lens
     - mtl
+    - optparse-applicative
     - optparse-generic
     - pushover
     - shakespeare

@@ -9,7 +9,7 @@ module Ops.CloudFormation.Parameters
     , toObject
     ) where
 
-import Data.Aeson (Value(..), Object, toJSON)
+import Data.Aeson (Object, Value(..), toJSON)
 import Data.Text (Text)
 import Stratosphere
 
@@ -36,6 +36,7 @@ cfParameters =
     , parameter "AppsLogLevel" "String"
         & default' ?~ "INFO"
         & allowedValues ?~ ["DEBUG", "INFO", "WARN", "ERROR"]
+    , parameter "RestylerTag" "String" & default' ?~ "latest"
 
     , parameter "CertificateARN" "String"
         & description ?~ "ARN of an Amazon SSL certificate for the Domain"

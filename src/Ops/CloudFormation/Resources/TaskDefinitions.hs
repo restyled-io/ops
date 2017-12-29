@@ -48,6 +48,9 @@ taskDefinitionResources =
                     , ecsTaskDefinitionKeyValuePair
                         & ecstdkvpName ?~ "LOG_LEVEL"
                         & ecstdkvpValue ?~ Ref "AppsLogLevel"
+                    , ecsTaskDefinitionKeyValuePair
+                        & ecstdkvpName ?~ "RESTYLER_TAG"
+                        & ecstdkvpValue ?~ Ref "RestylerTag"
                     ]
                 & ecstdcdMemoryReservation ?~ Literal 16        -- Soft/Reservation
                 & ecstdcdMemory ?~ Literal 128                  -- Hard
@@ -114,6 +117,9 @@ taskDefinitionResources =
                     , ecsTaskDefinitionKeyValuePair
                         & ecstdkvpName ?~ "LOG_LEVEL"
                         & ecstdkvpValue ?~ Ref "AppsLogLevel"
+                    , ecsTaskDefinitionKeyValuePair
+                        & ecstdkvpName ?~ "RESTYLER_TAG"
+                        & ecstdkvpValue ?~ Ref "RestylerTag"
                     ]
                 & ecstdcdMemoryReservation ?~ Literal 16        -- Soft/Reservation
                 & ecstdcdMemory ?~ Literal 128                  -- Hard

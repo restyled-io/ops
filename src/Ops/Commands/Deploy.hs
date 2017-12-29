@@ -1,33 +1,36 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 module Ops.Commands.Deploy
     ( DeployOptions(..)
+    , deployOptions
     , deployCommand
     ) where
 
-import Data.List (stripPrefix)
-import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
 import Data.Text (Text)
+import qualified Data.Text as T
 import Ops.Commands.Update
-import Options.Generic
+import Options.Applicative
 
 data DeployOptions = DeployOptions
     { doStackName :: Text
     , doImageName :: Text
     , doImageTag :: Text
     }
-    deriving Generic
 
-unPrefixLispCaseModifiers :: String -> Modifiers
-unPrefixLispCaseModifiers x = defaultModifiers
-    { fieldNameModifier = \y -> fieldNameModifier lispCaseModifiers
-        $ fromMaybe y $ stripPrefix x y
-    }
-
-instance ParseRecord DeployOptions where
-    parseRecord = parseRecordWithModifiers $ unPrefixLispCaseModifiers "do"
+deployOptions :: Parser DeployOptions
+deployOptions = DeployOptions
+    <$> (T.pack <$> strOption
+        (  long "stack-name"
+        <> value "RestyledProd"
+        ))
+    <*> (T.pack <$> strOption
+        (  long "image-name"
+        <> value "restyled/restyled.io"
+        ))
+    <*> (T.pack <$> strOption
+        (  long "image-tag"
+        ))
 
 deployCommand :: DeployOptions -> IO ()
 deployCommand DeployOptions{..} =

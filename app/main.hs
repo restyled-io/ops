@@ -7,7 +7,6 @@ import Ops.Commands.Deploy
 import Ops.Commands.Template
 import Ops.Commands.Update
 import Options.Applicative
-import Options.Generic
 
 data Options
     = Template
@@ -18,10 +17,10 @@ options :: Parser Options
 options = subparser
     (  command "template" (pure Template
         `withInfo` "Output the Cloud Formation template")
-    <> command "deploy" (Deploy <$> parseRecord
-        `withInfo` "Deploy an image to an existing Stack")
+    <> command "deploy" (Deploy <$> deployOptions
+        `withInfo` "Deploy a new Apps image")
     <> command "update" (Update <$> updateOptions
-        `withInfo` "Deploy an image to an existing Stack")
+        `withInfo` "Update Stack parameters")
     )
 
 main :: IO ()

@@ -22,7 +22,6 @@ library:
     - lens
     - mtl
     - optparse-applicative
-    - optparse-generic
     - pushover
     - shakespeare
     - stratosphere
@@ -41,7 +40,6 @@ executables:
     dependencies:
       - restyled-ops
       - optparse-applicative
-      - optparse-generic
 
 tests:
   doctest:

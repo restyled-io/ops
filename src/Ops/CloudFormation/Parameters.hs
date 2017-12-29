@@ -46,6 +46,7 @@ cfParameters =
         & description ?~ "Id for Restyled.io GitHub App"
     , parameter "GitHubAppKeyBase64" "String"
         & description ?~ "PEM key for Restyled.io GitHub App, base64-encoded"
+        & noEcho ?~ Bool' True
     , parameter "GitHubAppOAuthClientId" "String"
     , parameter "GitHubAppOAuthClientSecret" "String"
     , parameter "DBPassword" "String"

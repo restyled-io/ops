@@ -23,7 +23,6 @@ library:
     - mtl
     - optparse-applicative
     - pushover
-    - shakespeare
     - stratosphere
     - text
     - unordered-containers

@@ -7,7 +7,7 @@ module Ops.Commands.Update
     , updateOptions
     ) where
 
-import Control.Lens
+import Control.Lens hiding (argument)
 import Control.Monad (void)
 import qualified Data.Map as M
 import Data.Monoid ((<>))
@@ -39,7 +39,7 @@ updateOptions = UpdateOptions
         <> help "Notification message on success"
         <> value "Stack parameters updated"
         ))
-    <*> some (option (eitherReader readParameterUpdate)
+    <*> some (argument (eitherReader readParameterUpdate)
         ( metavar "KEY=VALUE"
         ))
 

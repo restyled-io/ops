@@ -1,5 +1,6 @@
-resolver: lts-9.6
+---
+resolver: lts-10.1
 packages:
-  - "."
+  - .
 extra-deps:
-- pushover-0.1.0.1
+  - pushover-0.1.0.1

@@ -31,11 +31,11 @@ data UpdateOptions = UpdateOptions
 updateOptions :: Parser UpdateOptions
 updateOptions = UpdateOptions
     <$> (T.pack <$> strOption
-        (  long "--stack-name"
+        (  long "stack-name"
         <> value "RestyledProd"
         ))
     <*> (T.pack <$> strOption
-        (  long "--message"
+        (  long "message"
         <> help "Notification message on success"
         <> value "Stack parameters updated"
         ))

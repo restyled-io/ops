@@ -49,6 +49,7 @@ cfParameters =
         & noEcho ?~ Bool' True
     , parameter "GitHubAppOAuthClientId" "String"
     , parameter "GitHubAppOAuthClientSecret" "String"
+        & noEcho ?~ Bool' True
     , parameter "DBPassword" "String"
         & description ?~ "Password for root user of the RDS instance"
         & minLength ?~ 10

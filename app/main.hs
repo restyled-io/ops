@@ -1,12 +1,15 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module Main (main) where
 
+import Control.Exception (IOException, handle)
 import Data.Semigroup ((<>))
 import Ops.Commands.Deploy
 import Ops.Commands.Template
 import Ops.Commands.Update
 import Options.Applicative
+import System.Exit (die)
 
 data Options
     = Template
@@ -24,10 +27,11 @@ options = subparser
     )
 
 main :: IO ()
-main = execParser (options `withInfo` "Operate Restyled.io") >>= \case
-    Template -> templateCommand
-    Deploy opts -> deployCommand opts
-    Update opts -> updateCommand opts
+main = handle (\(e :: IOException) -> die $ show e)
+    $ execParser (options `withInfo` "Operate Restyled.io") >>= \case
+        Template -> templateCommand
+        Deploy opts -> deployCommand opts
+        Update opts -> updateCommand opts
 
 withInfo :: Parser a -> String -> ParserInfo a
 cmd `withInfo` desc = info (cmd <**> helper) $ fullDesc <> progDesc desc

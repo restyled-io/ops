@@ -3,32 +3,29 @@ module Ops.Notify
     ( sendNotification
     ) where
 
+import Control.Exception.Safe (throwString)
 import Control.Monad ((<=<))
-import Control.Monad.Except
-import Data.Bifunctor (first)
 import Data.Monoid ((<>))
 import Data.Text (Text)
 import qualified Data.Text as T
 import Network.Pushover
 import System.Environment (getEnv)
-import System.IO.Error (tryIOError)
 
-sendNotification :: Text -> IO (Either String ())
-sendNotification msg = runExceptT $ do
+sendNotification :: Text -> IO ()
+sendNotification msg = do
     aKey <- getToken "PUSHOVER_API_KEY"
     uKey <- getToken "PUSHOVER_USER_KEY"
-    fromResponse <=< tryE $ sendMessage aKey uKey $ text msg
+    checkResponse =<< sendMessage aKey uKey (text msg)
 
-getToken :: String -> ExceptT String IO PushoverToken
-getToken = ExceptT . (first errorMessage . makeToken . T.pack <$>) . getEnv
+getToken :: String -> IO PushoverToken
+getToken =
+    either (throwString . errorMessage) pure . makeToken . T.pack <=< getEnv
 
-fromResponse :: Response -> ExceptT String IO ()
-fromResponse (Response Success _) = pure ()
-fromResponse (Response (Failure errs) req) = throwError $ T.unpack $ T.unlines $
+checkResponse :: Response -> IO ()
+checkResponse (Response Success _) = pure ()
+checkResponse (Response (Failure errs) req) = throwString $ T.unpack $ T.unlines $
     [ "Pushover request errored"
     , "Request: " <> req
     , "Errors: "
     ] ++ errs
 
-tryE :: IO a -> ExceptT String IO a
-tryE = ExceptT . (first show <$>) . tryIOError

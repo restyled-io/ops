@@ -68,7 +68,7 @@ readParameterUpdate x
 updateCommand :: UpdateOptions -> IO ()
 updateCommand UpdateOptions{..} = do
     deployStack uoStackName $ withUsePreviousParameters uoParameters
-    either die return =<< sendNotification uoMessage
+    sendNotification uoMessage
 
 withUsePreviousParameters :: [(Text, Text)] -> [(Text, Maybe Text)]
 withUsePreviousParameters = M.toList . M.fromList -- uniq by key

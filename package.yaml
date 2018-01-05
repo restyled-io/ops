@@ -20,7 +20,6 @@ library:
     - bytestring
     - containers
     - lens
-    - mtl
     - optparse-applicative
     - pushover
     - safe-exceptions

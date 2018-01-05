@@ -51,6 +51,9 @@ updateOptions = UpdateOptions
 -- >>> readParameterUpdate "MadeUp=VALUE"
 -- Left "Unknown parameter"
 --
+-- >>> readParameterUpdate "Environment"
+-- Left "Invalid KEY, use KEY= to unset"
+--
 -- >>> readParameterUpdate "Environment="
 -- Right ("Environment","")
 --
@@ -61,9 +64,10 @@ readParameterUpdate :: String -> Either String (Text, Text)
 readParameterUpdate x
     | T.null k = Left "Missing KEY"
     | k `notElem` knownParameters = Left "Unknown parameter"
-    | otherwise = Right (k, v)
+    | not ("=" `T.isPrefixOf` v) = Left "Invalid KEY, use KEY= to unset"
+    | otherwise = Right (k, T.drop 1 v)
   where
-    (k, v) = over _2 (T.drop 1) $ T.break (== '=') $ T.pack x
+    (k, v) = T.break (== '=') $ T.pack x
 
 updateCommand :: UpdateOptions -> IO ()
 updateCommand UpdateOptions{..} = do

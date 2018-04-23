@@ -51,6 +51,9 @@ taskDefinitionResources =
                     , ecsTaskDefinitionKeyValuePair
                         & ecstdkvpName ?~ "RESTYLER_TAG"
                         & ecstdkvpValue ?~ Ref "RestylerTag"
+                    , ecsTaskDefinitionKeyValuePair
+                        & ecstdkvpName ?~ "SESSION_KEY"
+                        & ecstdkvpValue ?~ Ref "SessionKey"
                     ]
                 & ecstdcdMemoryReservation ?~ Literal 16        -- Soft/Reservation
                 & ecstdcdMemory ?~ Literal 128                  -- Hard

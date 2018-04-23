@@ -37,6 +37,9 @@ cfParameters =
         & default' ?~ "INFO"
         & allowedValues ?~ ["DEBUG", "INFO", "WARN", "ERROR"]
     , parameter "RestylerTag" "String" & default' ?~ "latest"
+    , parameter "SessionKey" "String"
+        & default' ?~ ""
+        & noEcho ?~ Bool' True
 
     , parameter "CertificateARN" "String"
         & description ?~ "ARN of an Amazon SSL certificate for the Domain"

@@ -87,5 +87,5 @@ appsClusterResources =
         $ LogsLogGroupProperties
         $ logsLogGroup
         & llgLogGroupName ?~ prefixRef "Apps"
-        & llgRetentionInDays ?~ Literal 10
+        & llgRetentionInDays ?~ Literal 7
     ]

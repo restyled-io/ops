@@ -16,15 +16,20 @@ library:
     - aeson-qq
     - amazonka
     - amazonka-cloudformation
+    - amazonka-cloudwatch-logs
     - amazonka-core
+    - async
     - bytestring
     - containers
+    - escaped
     - lens
     - optparse-applicative
     - pushover
+    - random
     - safe-exceptions
     - stratosphere
     - text
+    - time
     - unordered-containers
 
 executables:

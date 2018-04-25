@@ -6,6 +6,7 @@ module Main (main) where
 import Control.Exception (IOException, handle)
 import Data.Semigroup ((<>))
 import Ops.Commands.Deploy
+import Ops.Commands.Logs
 import Ops.Commands.Template
 import Ops.Commands.Update
 import Options.Applicative
@@ -15,6 +16,7 @@ data Options
     = Template
     | Deploy DeployOptions
     | Update UpdateOptions
+    | Logs
 
 options :: Parser Options
 options = subparser
@@ -24,6 +26,8 @@ options = subparser
         `withInfo` "Deploy a new Apps image")
     <> command "update" (Update <$> updateOptions
         `withInfo` "Update Stack parameters")
+    <> command "logs" (pure Logs
+        `withInfo` "Tail CloudWatch logs")
     )
 
 main :: IO ()
@@ -32,6 +36,7 @@ main = handle (\(e :: IOException) -> die $ show e)
         Template -> templateCommand
         Deploy opts -> deployCommand opts
         Update opts -> updateCommand opts
+        Logs -> logsCommand
 
 withInfo :: Parser a -> String -> ParserInfo a
 cmd `withInfo` desc = info (cmd <**> helper) $ fullDesc <> progDesc desc

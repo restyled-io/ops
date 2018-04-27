@@ -12,11 +12,10 @@ import Control.Lens
 import Control.Monad (forever, void)
 import Control.Monad.IO.Class
 import Data.Foldable (for_)
-import Data.Maybe (fromMaybe, mapMaybe)
--- TODO: Fix Escaped for Semigroup
 import Data.Function (on)
 import Data.List (nubBy)
-import Data.Monoid ((<>))
+import Data.Maybe (fromMaybe, mapMaybe)
+import Data.Semigroup ((<>))
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Text.Escaped

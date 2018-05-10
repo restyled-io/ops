@@ -54,6 +54,9 @@ albResources =
         $ ElasticLoadBalancingV2TargetGroupProperties
         $ elasticLoadBalancingV2TargetGroup (Literal 3000) "HTTP" (Ref "Vpc")
         & elbvtgHealthCheckPath ?~ "/revision"
+        & elbvtgHealthCheckIntervalSeconds ?~ Literal 10
+        & elbvtgHealthyThresholdCount ?~ Literal 2
+        & elbvtgUnhealthyThresholdCount ?~ Literal 2
         & elbvtgName ?~ prefixRef "ALBTargetGroup"
         & elbvtgTags ?~ tag "Name" (prefixRef "ALBTargetGroup") : defaultTags
     , resource "DNSRecord"

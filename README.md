@@ -40,27 +40,7 @@ make image.release
 
 Assumes you've already `docker login`-ed to the registry.
 
-## Template Usage
-
-To create and operate Restyled in your own AWS account, use the template
-directly.
-
-For use in the AWS console:
-
-```console
-restyled-ops template > template.json
-```
-
-Or via the AWS CLI:
-
-```console
-aws cloudformation create-stack \
-  --stack-name MyStack \
-  --template-body "$(restyled-ops template)" \
-  ...
-```
-
-### Parameters
+## Parameters
 
 Most parameters are self-explanatory, except for:
 
@@ -79,9 +59,6 @@ Most parameters are self-explanatory, except for:
   ```console
   base64 /path/to/private-key.pem | tr -d '\n' | xclip -selection clipboard
   ```
-
-*NOTE*: Currently, such an installation still talks to `github.com`, but it's on
-the roadmap to support a custom GitHub host, e.g. for use with GH:E.
 
 ---
 

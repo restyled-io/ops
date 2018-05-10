@@ -84,9 +84,11 @@ streamToChannel start chan group name = go (Just start) Nothing
 
 formatEvent :: LogEvent -> Text
 formatEvent LogEvent{..} = render
-    $ lightGray (Plain $ T.pack $ show leTimestamp)
+    $ lightGray (Plain timestamp)
     <> " " <> magenta (Plain $ appName leStream)
     <> " " <> Plain leMessage
+  where
+    timestamp = T.pack $ formatTime defaultTimeLocale "%F %T %Z" leTimestamp
 
 logFetchDelay :: MonadIO m => Int -> m ()
 logFetchDelay s = liftIO $ do

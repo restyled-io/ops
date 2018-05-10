@@ -8,23 +8,25 @@ module Ops.Commands.Update
     ) where
 
 import Control.Lens hiding (argument)
-import Control.Monad (void)
+import Data.ByteString.Lazy (toStrict)
 import qualified Data.Map as M
 import Data.Monoid ((<>))
 import Data.Text (Text)
 import qualified Data.Text as T
-import Network.AWS.CloudFormation
-import Network.AWS.Waiter
+import Data.Text.Encoding (decodeUtf8)
 import Ops.AWS
 import Ops.CloudFormation.Parameters (cfParameters)
+import Ops.CloudFormation.Stack
+import Ops.CloudFormation.Template (cfTemplate)
 import Ops.Notify
 import Options.Applicative
-import Stratosphere (parameterName, unParameters)
+import Stratosphere (encodeTemplate, parameterName, unParameters)
 import System.Exit (die)
 
 data UpdateOptions = UpdateOptions
     { uoStackName :: Text
     , uoMessage :: Text
+    , uoTemplate :: Bool
     , uoParameters :: [(Text, Text)]
     }
 
@@ -39,7 +41,11 @@ updateOptions = UpdateOptions
         <> help "Notification message on success"
         <> value "Stack parameters updated"
         ))
-    <*> some (argument (eitherReader readParameterUpdate)
+    <*> switch
+        (  long "template"
+        <> help "Also update the Template"
+        )
+    <*> many (argument (eitherReader readParameterUpdate)
         ( metavar "KEY=VALUE"
         ))
 
@@ -71,8 +77,22 @@ readParameterUpdate x
 
 updateCommand :: UpdateOptions -> IO ()
 updateCommand UpdateOptions{..} = do
-    deployStack uoStackName $ withUsePreviousParameters uoParameters
-    sendNotification uoMessage
+    let templateBody = decodeUtf8 $ toStrict $ encodeTemplate cfTemplate
+        mTemplate = if uoTemplate then Just templateBody else Nothing
+
+    runAWS
+        $ sendStackUpdate uoStackName mTemplate
+        $ withUsePreviousParameters uoParameters
+
+    result <- awaitStackUpdate uoStackName
+
+    if result
+        then do
+            sendNotification uoMessage
+            putStrLn "Success."
+        else do
+            sendNotification "Stack update failed."
+            die "Stack update failed."
 
 withUsePreviousParameters :: [(Text, Text)] -> [(Text, Maybe Text)]
 withUsePreviousParameters = M.toList . M.fromList -- uniq by key
@@ -80,30 +100,6 @@ withUsePreviousParameters = M.toList . M.fromList -- uniq by key
     . map (over _2 Just)
   where
     existingParameters = map (, Nothing) knownParameters
-
-deployStack :: Text -> [(Text, Maybe Text)] -> IO ()
-deployStack name params = do
-    void $ runAWS $ send
-        $ updateStack name
-        & usUsePreviousTemplate ?~ True
-        & usParameters .~ toParameters params
-        & usCapabilities .~
-            [ CapabilityIAM
-            , CapabilityNamedIAM
-            ]
-
-    putStrLn "Stack updated, awaiting..."
-    result <- runAWS $ await stackUpdateComplete
-        (describeStacks & dStackName ?~ name)
-
-    case result of
-        AcceptSuccess -> putStrLn "Success."
-        _ -> die "Stack update failed, see AWS console for details."
-  where
-    toParameters = map (uncurry toParameter)
-    toParameter k mv = parameter & pParameterKey ?~ k & maybe
-        (pUsePreviousValue ?~ True)
-        (pParameterValue ?~) mv
 
 knownParameters :: [Text]
 knownParameters = map parameterName $ unParameters cfParameters

@@ -26,6 +26,7 @@ library:
     - optparse-applicative
     - pushover
     - random
+    - safe
     - safe-exceptions
     - stratosphere
     - text

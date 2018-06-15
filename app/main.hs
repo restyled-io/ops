@@ -10,6 +10,7 @@ import Options.Applicative
 newtype Options
     = Update UpdateOptions
 
+-- brittany-disable-next-binding
 options :: Parser Options
 options = subparser
     (  command "update" (Update <$> updateOptions
@@ -17,9 +18,8 @@ options = subparser
     )
 
 main :: IO ()
-main =
-    execParser (options `withInfo` "Operate Restyled.io") >>= \case
-        Update opts -> updateCommand opts
+main = execParser (options `withInfo` "Operate Restyled.io") >>= \case
+    Update opts -> updateCommand opts
 
 withInfo :: Parser a -> String -> ParserInfo a
 cmd `withInfo` desc = info (cmd <**> helper) $ fullDesc <> progDesc desc

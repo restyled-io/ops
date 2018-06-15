@@ -5,28 +5,23 @@ module Main (main) where
 
 import Control.Exception (IOException, handle)
 import Data.Semigroup ((<>))
-import Ops.Commands.Logs
 import Ops.Commands.Update
 import Options.Applicative
 import System.Exit (die)
 
-data Options
+newtype Options
     = Update UpdateOptions
-    | Logs
 
 options :: Parser Options
 options = subparser
     (  command "update" (Update <$> updateOptions
         `withInfo` "Update Stack parameters")
-    <> command "logs" (pure Logs
-        `withInfo` "Tail CloudWatch logs")
     )
 
 main :: IO ()
 main = handle (\(e :: IOException) -> die $ show e)
     $ execParser (options `withInfo` "Operate Restyled.io") >>= \case
         Update opts -> updateCommand opts
-        Logs -> logsCommand
 
 withInfo :: Parser a -> String -> ParserInfo a
 cmd `withInfo` desc = info (cmd <**> helper) $ fullDesc <> progDesc desc

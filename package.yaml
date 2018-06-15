@@ -16,7 +16,6 @@ library:
     - aeson-qq
     - amazonka
     - amazonka-cloudformation
-    - amazonka-cloudwatch-logs
     - amazonka-core
     - async
     - bytestring
@@ -25,7 +24,6 @@ library:
     - lens
     - optparse-applicative
     - pushover
-    - random
     - safe
     - safe-exceptions
     - stratosphere

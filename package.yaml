@@ -41,8 +41,9 @@ executables:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - restyled-ops
       - optparse-applicative
+      - restyled-ops
+      - text
 
 tests:
   doctest:

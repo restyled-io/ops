@@ -18,10 +18,8 @@ import Ops.AWS
 import Ops.CloudFormation.Parameters (cfParameters)
 import Ops.CloudFormation.Stack
 import Ops.CloudFormation.Template (cfTemplate)
-import Ops.Notify
 import Options.Applicative
 import Stratosphere (encodeTemplate, parameterName, unParameters)
-import System.Exit (die)
 
 data UpdateOptions = UpdateOptions
     { uoStackName :: Text
@@ -75,8 +73,8 @@ readParameterUpdate x
   where
     (k, v) = T.break (== '=') $ T.pack x
 
-updateCommand :: UpdateOptions -> IO ()
-updateCommand UpdateOptions{..} = do
+updateCommand :: UpdateOptions -> IO (Either Text Text)
+updateCommand UpdateOptions {..} = do
     let templateBody = decodeUtf8 $ toStrict $ encodeTemplate cfTemplate
         mTemplate = if uoTemplate then Just templateBody else Nothing
 
@@ -85,14 +83,7 @@ updateCommand UpdateOptions{..} = do
         $ withUsePreviousParameters uoParameters
 
     result <- awaitStackUpdate uoStackName
-
-    if result
-        then do
-            sendNotification uoMessage
-            putStrLn "Success."
-        else do
-            sendNotification "Stack update failed."
-            die "Stack update failed."
+    pure $ if result then Right uoMessage else Left "Stack update failed"
 
 withUsePreviousParameters :: [(Text, Text)] -> [(Text, Maybe Text)]
 withUsePreviousParameters = M.toList . M.fromList -- uniq by key

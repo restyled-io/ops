@@ -28,6 +28,7 @@ data UpdateOptions = UpdateOptions
     , uoParameters :: [(Text, Text)]
     }
 
+-- brittany-disable-next-binding
 updateOptions :: Parser UpdateOptions
 updateOptions = UpdateOptions
     <$> (T.pack <$> strOption
@@ -70,27 +71,26 @@ readParameterUpdate x
     | k `notElem` knownParameters = Left "Unknown parameter"
     | not ("=" `T.isPrefixOf` v) = Left "Invalid KEY, use KEY= to unset"
     | otherwise = Right (k, T.drop 1 v)
-  where
-    (k, v) = T.break (== '=') $ T.pack x
+    where (k, v) = T.break (== '=') $ T.pack x
 
 updateCommand :: UpdateOptions -> IO (Either Text Text)
 updateCommand UpdateOptions {..} = do
     let templateBody = decodeUtf8 $ toStrict $ encodeTemplate cfTemplate
         mTemplate = if uoTemplate then Just templateBody else Nothing
 
-    runAWS
-        $ sendStackUpdate uoStackName mTemplate
-        $ withUsePreviousParameters uoParameters
+    runAWS $ sendStackUpdate uoStackName mTemplate $ withUsePreviousParameters
+        uoParameters
 
     result <- awaitStackUpdate uoStackName
     pure $ if result then Right uoMessage else Left "Stack update failed"
 
 withUsePreviousParameters :: [(Text, Text)] -> [(Text, Maybe Text)]
-withUsePreviousParameters = M.toList . M.fromList -- uniq by key
-    . (existingParameters ++)
-    . map (over _2 Just)
-  where
-    existingParameters = map (, Nothing) knownParameters
+withUsePreviousParameters =
+    M.toList
+        . M.fromList -- uniq by key
+        . (existingParameters ++)
+        . map (over _2 Just)
+    where existingParameters = map (, Nothing) knownParameters
 
 knownParameters :: [Text]
 knownParameters = map parameterName $ unParameters cfParameters

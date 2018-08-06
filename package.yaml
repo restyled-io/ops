@@ -29,7 +29,6 @@ library:
     - stratosphere
     - text
     - time
-    - unordered-containers
 
 executables:
   restyled-ops:

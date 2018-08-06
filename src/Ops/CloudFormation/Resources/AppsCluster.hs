@@ -44,7 +44,7 @@ appsClusterResources =
     , resource "AppsLaunchConfiguration"
         $ AutoScalingLaunchConfigurationProperties
         $ autoScalingLaunchConfiguration
-            (FindInMap "RegionAMIs" (Ref "AWS::Region") "Id")
+            (Ref "AppsClusterAMI")
             (Ref "AppsClusterInstanceType")
         & aslcIamInstanceProfile ?~ Ref "AppsInstanceProfile"
         & aslcSecurityGroups ?~ [Ref "AppsSecurityGroup"]

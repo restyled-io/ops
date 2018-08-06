@@ -15,7 +15,6 @@ import Ops.CloudFormation.Resources.DataStores
 import Ops.CloudFormation.Resources.Network
 import Ops.CloudFormation.Resources.TaskDefinitions
 import Stratosphere
-import qualified Data.HashMap.Lazy as HM
 
 cfTemplate :: Template
 cfTemplate = template
@@ -27,11 +26,6 @@ cfTemplate = template
     <> taskDefinitionResources
     )
     & parameters ?~ cfParameters
-    & mappings ?~ HM.fromList
-        [("RegionAMIs", HM.fromList
-            [("us-east-1", toObject [aesonQQ|{"Id": "ami-ec33cc96"}|])
-            ])
-        ]
     & conditions ?~ toObject [aesonQQ|
         {
             "HasSubdomain": {

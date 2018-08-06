@@ -26,6 +26,8 @@ cfParameters =
     , parameter "CacheInstanceType" "String" & default' ?~ "cache.t2.micro"
     , parameter "CacheClusterSize" "Number" & default' ?~ "1"
 
+    , parameter "AppsClusterAMI" "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>"
+        & default' ?~ "/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id"
     , parameter "AppsClusterInstanceType" "String" & default' ?~ "t2.nano"
     , parameter "AppsClusterSize" "Number" & default' ?~ "1"
     , parameter "AppsImageName" "String" & default' ?~ "restyled/restyled"

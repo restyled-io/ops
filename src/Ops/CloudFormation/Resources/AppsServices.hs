@@ -31,7 +31,7 @@ appsServicesResources =
         ( ECSServiceProperties
         $ ecsService (Ref "AppTaskDefinition")
         & ecssCluster ?~ Ref "AppsCluster"
-        & ecssServiceName ?~ prefixRef "App"
+        & ecssServiceName ?~ prefixRef "App1"
         & ecssRole ?~ Ref "AppsServiceRole"
         & ecssDesiredCount ?~ Ref "AppsAppServiceCount"
         & ecssLoadBalancers ?~
@@ -39,14 +39,22 @@ appsServicesResources =
                 & ecsslbContainerName ?~ prefixRef "App"
                 & ecsslbTargetGroupArn ?~ Ref "ALBTargetGroup"
             ]
+        & ecssPlacementStrategies ?~
+            [ ecsServicePlacementStrategy "spread"
+                & ecsspsField ?~ "instanceId"
+            ]
         )
         & dependsOn ?~ ["ALB", "Cache", "DB"]
     , resource "BackendService"
         ( ECSServiceProperties
         $ ecsService (Ref "BackendTaskDefinition")
         & ecssCluster ?~ Ref "AppsCluster"
-        & ecssServiceName ?~ prefixRef "Backend"
+        & ecssServiceName ?~ prefixRef "Backend1"
         & ecssDesiredCount ?~ Ref "AppsBackendServiceCount"
+        & ecssPlacementStrategies ?~
+            [ ecsServicePlacementStrategy "spread"
+                & ecsspsField ?~ "instanceId"
+            ]
         )
         & dependsOn ?~ ["Cache", "DB"]
     ]

@@ -31,7 +31,7 @@ appsServicesResources =
         ( ECSServiceProperties
         $ ecsService (Ref "AppTaskDefinition")
         & ecssCluster ?~ Ref "AppsCluster"
-        & ecssServiceName ?~ prefixRef "App1"
+        & ecssServiceName ?~ prefixRef "App"
         & ecssRole ?~ Ref "AppsServiceRole"
         & ecssDesiredCount ?~ Ref "AppsAppServiceCount"
         & ecssLoadBalancers ?~
@@ -49,7 +49,7 @@ appsServicesResources =
         ( ECSServiceProperties
         $ ecsService (Ref "BackendTaskDefinition")
         & ecssCluster ?~ Ref "AppsCluster"
-        & ecssServiceName ?~ prefixRef "Backend1"
+        & ecssServiceName ?~ prefixRef "Backend"
         & ecssDesiredCount ?~ Ref "AppsBackendServiceCount"
         & ecssPlacementStrategies ?~
             [ ecsServicePlacementStrategy "spread"

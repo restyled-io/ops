@@ -25,6 +25,10 @@ lint:
 test:
 	stack test
 
+.PHONY: update
+update: build lint test
+	stack exec restyled-ops -- --no-notify update --template
+
 .PHONY: install
 install:
 	stack install

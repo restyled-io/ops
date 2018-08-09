@@ -55,9 +55,9 @@ taskDefinitionResources =
                         & ecstdkvpName ?~ "SESSION_KEY"
                         & ecstdkvpValue ?~ Ref "SessionKey"
                     ]
-                & ecstdcdCpu ?~ Literal 10
-                & ecstdcdMemoryReservation ?~ Literal 32 -- Soft/Reservation
-                & ecstdcdMemory ?~ Literal 64 -- Hard
+                & ecstdcdCpu ?~ Literal 50
+                & ecstdcdMemory ?~ Literal 512 -- Hard
+                & ecstdcdMemoryReservation ?~ Literal 64 -- Soft/Reservation
                 & ecstdcdPortMappings ?~
                     [ ecsTaskDefinitionPortMapping
                         & ecstdpmContainerPort ?~ Literal 3000
@@ -125,9 +125,9 @@ taskDefinitionResources =
                         & ecstdkvpName ?~ "RESTYLER_TAG"
                         & ecstdkvpValue ?~ Ref "RestylerTag"
                     ]
-                & ecstdcdCpu ?~ Literal 10
+                & ecstdcdCpu ?~ Literal 20
+                & ecstdcdMemory ?~ Literal 512 -- Hard
                 & ecstdcdMemoryReservation ?~ Literal 32 -- Soft/Reservation
-                & ecstdcdMemory ?~ Literal 64 -- Hard
                 & ecstdcdMountPoints ?~
                     [ ecsTaskDefinitionMountPoint
                         & ecstdmpSourceVolume ?~ "tmp"

@@ -78,7 +78,9 @@ appsClusterResources =
         )
         & resUpdatePolicy ?~ (updatePolicy
             & upAutoScalingRollingUpdate ?~ (autoScalingRollingUpdatePolicy
-                & asrupMinInstancesInService ?~ Literal 1))
+                & asrupMaxBatchSize ?~ Literal 1
+                & asrupMinInstancesInService ?~ Literal 1
+                & asrupPauseTime ?~ "PT15S"))
     , resource "AppsCluster"
         $ ECSClusterProperties
         $ ecsCluster

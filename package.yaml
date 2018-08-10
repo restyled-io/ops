@@ -17,16 +17,19 @@ library:
     - amazonka
     - amazonka-cloudformation
     - amazonka-core
+    - amazonka-s3
     - async
     - bytestring
     - containers
     - escaped
+    - filepath
     - lens
     - optparse-applicative
     - pushover
     - safe
     - safe-exceptions
     - stratosphere
+    - temporary
     - text
     - time
 

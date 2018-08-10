@@ -8,18 +8,22 @@ module Ops.Commands.Update
     ) where
 
 import Control.Lens hiding (argument)
-import Data.ByteString.Lazy (toStrict)
+import qualified Data.ByteString.Lazy as BS
 import qualified Data.Map as M
 import Data.Monoid ((<>))
 import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Text.Encoding (decodeUtf8)
+import Network.AWS hiding (runAWS)
+import Network.AWS.Data.Text (toText)
+import Network.AWS.S3
 import Ops.AWS
 import Ops.CloudFormation.Parameters (cfParameters)
 import Ops.CloudFormation.Stack
 import Ops.CloudFormation.Template (cfTemplate)
 import Options.Applicative
 import Stratosphere (encodeTemplate, parameterName, unParameters)
+import System.FilePath ((</>))
+import System.IO.Temp (withSystemTempDirectory)
 
 data UpdateOptions = UpdateOptions
     { uoStackName :: Text
@@ -75,14 +79,31 @@ readParameterUpdate x
 
 updateCommand :: UpdateOptions -> IO (Either Text Text)
 updateCommand UpdateOptions {..} = do
-    let templateBody = decodeUtf8 $ toStrict $ encodeTemplate cfTemplate
-        mTemplate = if uoTemplate then Just templateBody else Nothing
+    mTemplateUrl <- if uoTemplate
+        then Just <$> uploadTemplateToS3
+        else pure Nothing
 
-    runAWS $ sendStackUpdate uoStackName mTemplate $ withUsePreviousParameters
+    runAWS $ sendStackUpdate uoStackName mTemplateUrl $ withUsePreviousParameters
         uoParameters
 
     result <- awaitStackUpdate uoStackName
     pure $ if result then Right uoMessage else Left "Stack update failed"
+
+uploadTemplateToS3 :: IO Text
+uploadTemplateToS3 = withSystemTempDirectory "" $ \dir -> do
+    let tmp = dir </> "template.json"
+    BS.writeFile tmp $ encodeTemplate cfTemplate
+
+    runAWS $ do
+        body <- chunkedFile defaultChunkSize tmp
+        s3Url <$ send (putObject bucketName objectKey body)
+  where
+    bucketName = "cf-templates-11c45cq7egw69-us-east-1"
+    objectKey = "TODO.json"
+    s3Url = "https://s3.amazonaws.com/"
+        <> toText bucketName
+        <> "/"
+        <> toText objectKey
 
 withUsePreviousParameters :: [(Text, Text)] -> [(Text, Maybe Text)]
 withUsePreviousParameters =

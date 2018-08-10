@@ -25,17 +25,17 @@ import Ops.AWS
 import Safe (headMay)
 
 sendStackUpdate :: Text -> Maybe Text -> [(Text, Maybe Text)] -> AWS ()
-sendStackUpdate name mTemplate params = void
+sendStackUpdate name mTemplateUrl params = void
     $ send
     $ updateStack name
-    & toTemplateSetter mTemplate
+    & toTemplateSetter mTemplateUrl
     & usParameters .~ toParameters params
     & usCapabilities .~
         [ CapabilityIAM
         , CapabilityNamedIAM
         ]
   where
-    toTemplateSetter (Just body) = usTemplateBody ?~ body
+    toTemplateSetter (Just url) = usTemplateURL ?~ url
     toTemplateSetter Nothing = usUsePreviousTemplate ?~ True
 
     toParameters = map (uncurry toParameter)

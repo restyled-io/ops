@@ -28,6 +28,7 @@ library:
     - pushover
     - safe
     - safe-exceptions
+    - shakespeare
     - stratosphere
     - temporary
     - text

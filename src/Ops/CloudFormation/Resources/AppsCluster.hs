@@ -1,13 +1,18 @@
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TemplateHaskell #-}
 module Ops.CloudFormation.Resources.AppsCluster
     ( appsClusterResources
     ) where
 
 import Data.Aeson.QQ (aesonQQ)
+import Data.Text (Text)
+import Data.Text.Internal.Builder
+import Data.Text.Lazy (toStrict)
 import Ops.CloudFormation.Parameters
 import Stratosphere
+import Text.Shakespeare.Text (textFile)
 
 appsClusterResources :: Resources
 appsClusterResources =
@@ -38,6 +43,26 @@ appsClusterResources =
         & iamrManagedPolicyArns ?~
             [ "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
             ]
+        & iamrPolicies ?~
+            [ iamRolePolicy
+                (toObject [aesonQQ|
+                    {
+                        "Version": "2012-10-17",
+                        "Statement": [{
+                            "Effect": "Allow",
+                            "Action": [
+                                "logs:CreateLogGroup",
+                                "logs:CreateLogStream",
+                                "logs:PutLogEvents",
+                                "logs:DescribeLogStreams"
+                            ],
+                            "Resource": ["arn:aws:logs:*:*:*"]
+                        }]
+                    }
+                    |]
+                )
+                (prefixRef "AppsLogsPolicy")
+            ]
     , resource "AppsInstanceProfile"
         $ IAMInstanceProfileProperties
         $ iamInstanceProfile [Ref "AppsInstanceRole"]
@@ -48,15 +73,7 @@ appsClusterResources =
             (Ref "AppsClusterInstanceType")
         & aslcIamInstanceProfile ?~ Ref "AppsInstanceProfile"
         & aslcSecurityGroups ?~ [Ref "AppsSecurityGroup"]
-        & aslcUserData ?~ Base64 (Join "\n"
-            [ "#!/bin/bash"
-            , "# Join the apps cluser"
-            , Join ""
-                [ "echo ECS_CLUSTER="
-                , prefixRef "Apps"
-                , " >> /etc/ecs/ecs.config"
-                ]
-            ])
+        & aslcUserData ?~ Base64 (Sub userDataText Nothing)
     , resource "AppsAutoScalingGroup"
         ( AutoScalingAutoScalingGroupProperties
         $ autoScalingAutoScalingGroup "5" "1" -- [sic]
@@ -76,11 +93,16 @@ appsClusterResources =
                 "Environment" (Literal True) (Ref "Environment")
             ]
         )
+        & resCreationPolicy ?~ creationPolicy
+            (resourceSignal
+                & rsCount ?~ Ref "AppsClusterSize"
+                & rsTimeout ?~ "PT60S")
         & resUpdatePolicy ?~ (updatePolicy
             & upAutoScalingRollingUpdate ?~ (autoScalingRollingUpdatePolicy
                 & asrupMaxBatchSize ?~ Literal 1
-                & asrupMinInstancesInService ?~ Literal 1
-                & asrupPauseTime ?~ "PT15S"))
+                & asrupMinInstancesInService ?~ Literal 2
+                & asrupPauseTime ?~ "PT60S"
+                & asrupWaitOnResourceSignals ?~ Literal True))
     , resource "AppsCluster"
         $ ECSClusterProperties
         $ ecsCluster
@@ -91,3 +113,9 @@ appsClusterResources =
         & llgLogGroupName ?~ prefixRef "Apps"
         & llgRetentionInDays ?~ Literal 7
     ]
+
+userDataText :: Text
+userDataText = fromTextFile $(textFile "files/user-data.sh")
+
+fromTextFile :: (Text -> Builder) -> Text
+fromTextFile q = toStrict $ toLazyText $ q ""

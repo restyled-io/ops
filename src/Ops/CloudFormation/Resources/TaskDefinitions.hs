@@ -4,6 +4,8 @@ module Ops.CloudFormation.Resources.TaskDefinitions
     ( taskDefinitionResources
     ) where
 
+-- brittany-disable
+
 import Data.Aeson (toJSON)
 import Data.Text (Text)
 import Ops.CloudFormation.Parameters
@@ -54,6 +56,9 @@ taskDefinitionResources =
                     , ecsTaskDefinitionKeyValuePair
                         & ecstdkvpName ?~ "SESSION_KEY"
                         & ecstdkvpValue ?~ Ref "SessionKey"
+                    , ecsTaskDefinitionKeyValuePair
+                        & ecstdkvpName ?~ "CLOUDWATCH_EKG"
+                        & ecstdkvpValue ?~ "1"
                     ]
                 & ecstdcdCpu ?~ Literal 50
                 & ecstdcdMemory ?~ Literal 512 -- Hard
@@ -124,6 +129,9 @@ taskDefinitionResources =
                     , ecsTaskDefinitionKeyValuePair
                         & ecstdkvpName ?~ "RESTYLER_TAG"
                         & ecstdkvpValue ?~ Ref "RestylerTag"
+                    , ecsTaskDefinitionKeyValuePair
+                        & ecstdkvpName ?~ "CLOUDWATCH_EKG"
+                        & ecstdkvpValue ?~ "1"
                     ]
                 & ecstdcdCpu ?~ Literal 20
                 & ecstdcdMemory ?~ Literal 512 -- Hard

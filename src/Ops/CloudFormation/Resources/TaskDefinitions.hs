@@ -58,7 +58,7 @@ taskDefinitionResources =
                         & ecstdkvpValue ?~ Ref "SessionKey"
                     , ecsTaskDefinitionKeyValuePair
                         & ecstdkvpName ?~ "CLOUDWATCH_EKG"
-                        & ecstdkvpValue ?~ "1"
+                        & ecstdkvpValue ?~ Ref "AppsCloudWatchEKG"
                     ]
                 & ecstdcdCpu ?~ Literal 50
                 & ecstdcdMemory ?~ Literal 512 -- Hard
@@ -131,7 +131,7 @@ taskDefinitionResources =
                         & ecstdkvpValue ?~ Ref "RestylerTag"
                     , ecsTaskDefinitionKeyValuePair
                         & ecstdkvpName ?~ "CLOUDWATCH_EKG"
-                        & ecstdkvpValue ?~ "1"
+                        & ecstdkvpValue ?~ Ref "AppsCloudWatchEKG"
                     ]
                 & ecstdcdCpu ?~ Literal 20
                 & ecstdcdMemory ?~ Literal 512 -- Hard

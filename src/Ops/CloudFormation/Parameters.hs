@@ -13,6 +13,8 @@ import Data.Aeson (Object, Value(..), toJSON)
 import Data.Text (Text)
 import Stratosphere
 
+-- brittany-disable
+
 cfParameters :: Parameters
 cfParameters =
     [ parameter "App" "String" & default' ?~ "Restyled"
@@ -38,6 +40,11 @@ cfParameters =
     , parameter "AppsLogLevel" "String"
         & default' ?~ "INFO"
         & allowedValues ?~ ["DEBUG", "INFO", "WARN", "ERROR"]
+    , parameter "AppsCloudWatchEKG" "String"
+        & description ?~ "Send EKG stats to CloudWatch?"
+        & default' ?~ ""
+        & allowedValues ?~ ["", "1"]
+        & constraintDescription ?~ "Empty for false, or 1 for true"
     , parameter "RestylerTag" "String" & default' ?~ "latest"
     , parameter "SessionKey" "String"
         & default' ?~ ""

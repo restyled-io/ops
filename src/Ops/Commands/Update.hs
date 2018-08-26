@@ -9,6 +9,7 @@ module Ops.Commands.Update
 
 import Control.Lens hiding (argument)
 import qualified Data.ByteString.Lazy as BS
+import Data.List (isSuffixOf)
 import qualified Data.Map as M
 import Data.Monoid ((<>))
 import Data.Text (Text)
@@ -29,9 +30,22 @@ import System.IO.Temp (withSystemTempDirectory)
 data UpdateOptions = UpdateOptions
     { uoStackName :: Text
     , uoMessage :: Text
-    , uoTemplate :: Bool
+    , uoTemplate :: TemplateOption
     , uoParameters :: [(Text, Text)]
     }
+
+data TemplateOption
+    = New -- ^ Use the template defined here
+    | RollBack ObjectKey -- ^ Use a previously uploaded template in S3
+    | None -- ^ Don't update the template
+
+parseTemplateOption :: String -> Either String TemplateOption
+parseTemplateOption "new" = Right New
+parseTemplateOption "none" = Right None
+parseTemplateOption path =
+    Right $ RollBack $ ObjectKey $ T.pack $ if ".json" `isSuffixOf` path
+        then path
+        else path <> ".json"
 
 -- brittany-disable-next-binding
 updateOptions :: Parser UpdateOptions
@@ -45,9 +59,11 @@ updateOptions = UpdateOptions
         <> help "Notification message on success"
         <> value "Stack parameters updated"
         ))
-    <*> switch
+    <*> option (eitherReader parseTemplateOption)
         (  long "template"
-        <> help "Also update the Template"
+        <> help "How to update the Template"
+        <> metavar "none|new|{name(.json)}"
+        <> value None
         )
     <*> many (argument (eitherReader readParameterUpdate)
         ( metavar "KEY=VALUE"
@@ -80,38 +96,42 @@ readParameterUpdate x
 
 updateCommand :: UpdateOptions -> IO (Either Text Text)
 updateCommand UpdateOptions {..} = do
-    mTemplateUrl <- if uoTemplate
-        then Just <$> uploadTemplateToS3
-        else pure Nothing
+    mObjectKey <- case uoTemplate of
+        New -> Just <$> uploadTemplateToS3
+        RollBack objectKey -> pure $ Just objectKey
+        None -> pure Nothing
 
     runAWS
-        $ sendStackUpdate uoStackName mTemplateUrl
+        $ sendStackUpdate uoStackName (cfTemplateUrl <$> mObjectKey)
         $ withUsePreviousParameters uoParameters
 
     result <- awaitStackUpdate uoStackName
     pure $ if result then Right uoMessage else Left "Stack update failed"
 
-uploadTemplateToS3 :: IO Text
+uploadTemplateToS3 :: IO ObjectKey
 uploadTemplateToS3 = withSystemTempDirectory "" $ \dir -> do
-    now <- getCurrentTime
-
     let tmp = dir </> "template.json"
-        bucketName = "cf-templates-11c45cq7egw69-us-east-1"
-        objectKey = ObjectKey $ T.pack $ formatTime
-            defaultTimeLocale
-            "%Y%M%d_%s.json"
-            now
-        s3Url =
-            "https://s3.amazonaws.com/"
-                <> toText bucketName
-                <> "/"
-                <> toText objectKey
-
     BS.writeFile tmp $ encodeTemplate cfTemplate
+
+    objectKey <-
+        ObjectKey
+        . T.pack
+        . formatTime defaultTimeLocale "%Y%M%d_%s.json"
+        <$> getCurrentTime
 
     runAWS $ do
         body <- chunkedFile defaultChunkSize tmp
-        s3Url <$ send (putObject bucketName objectKey body)
+        objectKey <$ send (putObject cfBucketName objectKey body)
+
+cfBucketName :: BucketName
+cfBucketName = "cf-templates-11c45cq7egw69-us-east-1"
+
+cfTemplateUrl :: ObjectKey -> Text
+cfTemplateUrl objectKey =
+    "https://s3.amazonaws.com/"
+        <> toText cfBucketName
+        <> "/"
+        <> toText objectKey
 
 withUsePreviousParameters :: [(Text, Text)] -> [(Text, Maybe Text)]
 withUsePreviousParameters =

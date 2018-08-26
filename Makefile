@@ -14,7 +14,7 @@ clean:
 
 .PHONY: build
 build:
-	stack build --pedantic --test --no-run-tests
+	stack build --fast --pedantic --test --no-run-tests
 
 .PHONY: lint
 lint:

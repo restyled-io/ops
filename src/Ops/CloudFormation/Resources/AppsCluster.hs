@@ -14,6 +14,7 @@ import Ops.CloudFormation.Parameters
 import Stratosphere
 import Text.Shakespeare.Text (textFile)
 
+-- brittany-disable-next-binding
 appsClusterResources :: Resources
 appsClusterResources =
     [ resource "AppsSecurityGroup"

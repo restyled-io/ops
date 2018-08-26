@@ -4,12 +4,12 @@ module Ops.CloudFormation.Resources.TaskDefinitions
     ( taskDefinitionResources
     ) where
 
--- brittany-disable
-
 import Data.Aeson (toJSON)
 import Data.Text (Text)
 import Ops.CloudFormation.Parameters
 import Stratosphere
+
+-- brittany-disable-next-binding
 
 taskDefinitionResources :: Resources
 taskDefinitionResources =
@@ -155,6 +155,8 @@ taskDefinitionResources =
         & dependsOn ?~ ["AppsClusterLogGroup"]
     ]
 
+-- brittany-disable-next-binding
+
 databaseURL :: Val Text
 databaseURL = Join ""
     [ "postgres://"
@@ -164,6 +166,8 @@ databaseURL = Join ""
     , GetAtt "DB" "Endpoint.Port", "/"
     , "restyled"
     ]
+
+-- brittany-disable-next-binding
 
 redisURL :: Val Text
 redisURL = Join ""

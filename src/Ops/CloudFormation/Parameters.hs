@@ -13,7 +13,7 @@ import Data.Aeson (Object, Value(..), toJSON)
 import Data.Text (Text)
 import Stratosphere
 
--- brittany-disable
+-- brittany-disable-next-binding
 
 cfParameters :: Parameters
 cfParameters =
@@ -70,8 +70,8 @@ cfParameters =
 
 -- | @{Subdomain}.{Domain}@ if @Subdomain@ is present, otherwise @{Domain}@
 fqdnRef :: Val Text
-fqdnRef = If "HasSubdomain"
-    (Join "." [Ref "Subdomain", Ref "Domain"]) $ Ref "Domain"
+fqdnRef =
+    If "HasSubdomain" (Join "." [Ref "Subdomain", Ref "Domain"]) $ Ref "Domain"
 
 -- | Prefix a reference with @{App}{Environment}@
 prefixRef :: Val Text -> Val Text
@@ -83,10 +83,7 @@ prefixJSON = toJSON . prefixRef
 
 -- | The set of tags to apply to all resources that support it
 defaultTags :: [Tag]
-defaultTags =
-    [ tag "App" $ Ref "App"
-    , tag "Environment" $ Ref "Environment"
-    ]
+defaultTags = [tag "App" $ Ref "App", tag "Environment" $ Ref "Environment"]
 
 -- | De-construct an @'Object'@ @'Value'@ to just the @'Object'@
 --

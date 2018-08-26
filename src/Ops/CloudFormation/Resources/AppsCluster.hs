@@ -58,12 +58,12 @@ appsClusterResources =
                                 "logs:PutLogEvents",
                                 "logs:DescribeLogStreams"
                             ],
-                            "Resource": ["arn:aws:logs:*:*:*"]
+                            "Resource": "*"
                         }]
                     }
                     |]
                 )
-                (prefixRef "AppsLogsPolicy")
+                (prefixRef "InstancePolicy")
             ]
     , resource "AppsInstanceProfile"
         $ IAMInstanceProfileProperties

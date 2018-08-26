@@ -52,6 +52,7 @@ appsClusterResources =
                         "Statement": [{
                             "Effect": "Allow",
                             "Action": [
+                                "cloudwatch:PutMetricData",
                                 "logs:CreateLogGroup",
                                 "logs:CreateLogStream",
                                 "logs:PutLogEvents",

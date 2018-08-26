@@ -13,6 +13,7 @@ import qualified Data.Map as M
 import Data.Monoid ((<>))
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Time
 import Network.AWS hiding (runAWS)
 import Network.AWS.Data.Text (toText)
 import Network.AWS.S3
@@ -83,27 +84,34 @@ updateCommand UpdateOptions {..} = do
         then Just <$> uploadTemplateToS3
         else pure Nothing
 
-    runAWS $ sendStackUpdate uoStackName mTemplateUrl $ withUsePreviousParameters
-        uoParameters
+    runAWS
+        $ sendStackUpdate uoStackName mTemplateUrl
+        $ withUsePreviousParameters uoParameters
 
     result <- awaitStackUpdate uoStackName
     pure $ if result then Right uoMessage else Left "Stack update failed"
 
 uploadTemplateToS3 :: IO Text
 uploadTemplateToS3 = withSystemTempDirectory "" $ \dir -> do
+    now <- getCurrentTime
+
     let tmp = dir </> "template.json"
+        bucketName = "cf-templates-11c45cq7egw69-us-east-1"
+        objectKey = ObjectKey $ T.pack $ formatTime
+            defaultTimeLocale
+            "%Y%M%d_%s.json"
+            now
+        s3Url =
+            "https://s3.amazonaws.com/"
+                <> toText bucketName
+                <> "/"
+                <> toText objectKey
+
     BS.writeFile tmp $ encodeTemplate cfTemplate
 
     runAWS $ do
         body <- chunkedFile defaultChunkSize tmp
         s3Url <$ send (putObject bucketName objectKey body)
-  where
-    bucketName = "cf-templates-11c45cq7egw69-us-east-1"
-    objectKey = "TODO.json"
-    s3Url = "https://s3.amazonaws.com/"
-        <> toText bucketName
-        <> "/"
-        <> toText objectKey
 
 withUsePreviousParameters :: [(Text, Text)] -> [(Text, Maybe Text)]
 withUsePreviousParameters =

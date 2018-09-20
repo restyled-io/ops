@@ -61,7 +61,7 @@ taskDefinitionResources =
                         & ecstdkvpValue ?~ Ref "AppsCloudWatchEKG"
                     ]
                 & ecstdcdCpu ?~ Literal 50
-                & ecstdcdMemory ?~ Literal 512 -- Hard
+                & ecstdcdMemory ?~ Literal 256 -- Hard
                 & ecstdcdMemoryReservation ?~ Literal 64 -- Soft/Reservation
                 & ecstdcdPortMappings ?~
                     [ ecsTaskDefinitionPortMapping
@@ -134,8 +134,8 @@ taskDefinitionResources =
                         & ecstdkvpValue ?~ Ref "AppsCloudWatchEKG"
                     ]
                 & ecstdcdCpu ?~ Literal 10
-                & ecstdcdMemory ?~ Literal 1028 -- Hard
-                & ecstdcdMemoryReservation ?~ Literal 512 -- Soft/Reservation
+                & ecstdcdMemory ?~ Literal 256 -- Hard
+                & ecstdcdMemoryReservation ?~ Literal 128 -- Soft/Reservation
                 & ecstdcdMountPoints ?~
                     [ ecsTaskDefinitionMountPoint
                         & ecstdmpSourceVolume ?~ "tmp"

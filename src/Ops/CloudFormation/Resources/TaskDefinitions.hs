@@ -133,9 +133,9 @@ taskDefinitionResources =
                         & ecstdkvpName ?~ "CLOUDWATCH_EKG"
                         & ecstdkvpValue ?~ Ref "AppsCloudWatchEKG"
                     ]
-                & ecstdcdCpu ?~ Literal 20
-                & ecstdcdMemory ?~ Literal 512 -- Hard
-                & ecstdcdMemoryReservation ?~ Literal 32 -- Soft/Reservation
+                & ecstdcdCpu ?~ Literal 10
+                & ecstdcdMemory ?~ Literal 1028 -- Hard
+                & ecstdcdMemoryReservation ?~ Literal 512 -- Soft/Reservation
                 & ecstdcdMountPoints ?~
                     [ ecsTaskDefinitionMountPoint
                         & ecstdmpSourceVolume ?~ "tmp"

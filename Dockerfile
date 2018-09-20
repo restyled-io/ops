@@ -15,6 +15,7 @@ COPY package.yaml /src/
 RUN stack install --dependencies-only
 
 COPY app /src/app
+COPY files /src/files
 COPY src /src/src
 COPY LICENSE /src/
 RUN stack install

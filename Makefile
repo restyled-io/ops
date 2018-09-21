@@ -26,7 +26,7 @@ test:
 	stack test
 
 .PHONY: update
-update: build lint test
+update:
 	stack exec restyled-ops -- --no-notify update --template new
 
 .PHONY: install

@@ -133,7 +133,7 @@ taskDefinitionResources =
                         & ecstdkvpName ?~ "CLOUDWATCH_EKG"
                         & ecstdkvpValue ?~ Ref "AppsCloudWatchEKG"
                     ]
-                & ecstdcdCpu ?~ Literal 15
+                & ecstdcdCpu ?~ Literal 50
                 & ecstdcdMemory ?~ Literal backendMemory
                 & ecstdcdMemoryReservation ?~ Literal backendMemoryReservation
                 & ecstdcdMountPoints ?~
@@ -155,29 +155,20 @@ taskDefinitionResources =
         & dependsOn ?~ ["AppsClusterLogGroup"]
     ]
 
--- | Total memory on one t3.nano
-instanceMemory :: Integer
-instanceMemory = 461
+instanceLimit :: Integer
+instanceLimit = 959 - 128
 
--- | Let an App take over its whole box if it can
 appMemory :: Integer
-appMemory = instanceMemory
+appMemory = instanceLimit
 
--- | But only reserve a little
 appMemoryReservation :: Integer
 appMemoryReservation = 64
 
--- | Value needed to clone a known large repo, determined experimentally
 backendMemory :: Integer
-backendMemory = 448
+backendMemory = instanceLimit
 
--- |
---
--- Reserve in a way that we can fit 1 App + 1 Backend anywhere during
--- deployment, but never 2 App + 1 Backend in steady-state
---
 backendMemoryReservation :: Integer
-backendMemoryReservation = instanceMemory - appMemoryReservation - 5
+backendMemoryReservation = 392
 
 -- brittany-disable-next-binding
 

@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -eu
+
+if [ -z "$1" ]; then
+  echo "usage: release-restyled <tag>" >&2
+  exit 64
+fi
+
+# heroku still exits 0 when the build/push fails, so we have to manually capture
+# the output and check that there were no errors before proceeding. N.B. this
+# function has the side-effect of combining stdout/stderr, unfortunately.
+checked_output() {
+  tee output
+  grep -Fq Error output && exit 1
+  rm output
+}
+
+image=restyled/restyled.io:$1
+app=${2:-restyled-io}
+tmp=$(mktemp -d)
+cd "$tmp"
+
+cat >Dockerfile.web <<EOM
+FROM $image
+CMD ["/app/restyled.io"]
+EOM
+
+cat >Dockerfile.backend <<EOM
+FROM $image
+CMD ["/app/restyled.io-backend"]
+EOM
+
+docker login \
+  --username "$HEROKU_EMAIL" \
+  --password "$HEROKU_API_KEY" \
+  registry.heroku.com
+
+heroku container:push --app "$app" --recursive |& checked_output
+heroku container:release --app "$app" web backend

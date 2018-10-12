@@ -1,42 +1,18 @@
-all: setup build lint test
-
-release: clean build lint test image.build image.release
-
-.PHONY: setup
-setup:
-	stack setup
-	stack build --dependencies-only --test --no-run-tests
-	stack install --copy-compiler-tool hlint weeder
-
-.PHONY: clean
-clean:
-	stack clean
+IMAGE_TAG ?= latest
+IMAGE_NAME ?= restyled/ops:$(IMAGE_TAG)
 
 .PHONY: build
 build:
-	stack build --fast --pedantic --test --no-run-tests
+	docker build --tag "$(IMAGE_NAME)" .
 
-.PHONY: lint
-lint:
-	stack exec hlint .
-	stack exec weeder .
+.PHONY: release
+release: build
+	docker push "$(IMAGE_NAME)"
 
-.PHONY: test
-test:
-	stack test
-
-.PHONY: update
-update:
-	stack exec restyled-ops -- --no-notify update --template new
-
-.PHONY: install
-install:
-	stack install
-
-.PHONY: image.build
-image.build:
-	docker build --tag restyled/ops .
-
-.PHONY: image.release
-image.release:
-	docker push restyled/ops
+.PHONY: shell
+shell: build
+	docker run --interactive --tty --rm \
+	  --env HEROKU_EMAIL \
+	  --env HEROKU_API_KEY \
+	  --volume /var/run/docker.sock:/var/run/docker.sock \
+	  "$(IMAGE_NAME)" bash

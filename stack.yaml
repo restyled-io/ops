@@ -1,8 +1,0 @@
----
-resolver: lts-10.1
-extra-deps:
-  - pushover-0.1.0.1
-  - git: https://github.com/pbrisbin/escaped
-    commit: 535c09a19626abcf6069786c58496d33e0ffdbbf
-ghc-options:
-  "$locals": -fhide-source-paths

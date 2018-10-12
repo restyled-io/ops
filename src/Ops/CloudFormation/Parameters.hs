@@ -66,6 +66,9 @@ cfParameters =
         & description ?~ "Password for root user of the RDS instance"
         & minLength ?~ 10
         & noEcho ?~ Bool' True
+
+    , parameter "DatabaseUrl" "String"
+    , parameter "RedisUrl" "String"
     ]
 
 -- | @{Subdomain}.{Domain}@ if @Subdomain@ is present, otherwise @{Domain}@

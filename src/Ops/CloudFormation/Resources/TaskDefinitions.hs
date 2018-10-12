@@ -28,10 +28,10 @@ taskDefinitionResources =
                         & ecstdkvpValue ?~ Join "" ["https://", fqdnRef]
                     , ecsTaskDefinitionKeyValuePair
                         & ecstdkvpName ?~ "DATABASE_URL"
-                        & ecstdkvpValue ?~ databaseURL
+                        & ecstdkvpValue ?~ Ref "DatabaseUrl"
                     , ecsTaskDefinitionKeyValuePair
                         & ecstdkvpName ?~ "REDIS_URL"
-                        & ecstdkvpValue ?~ redisURL
+                        & ecstdkvpValue ?~ Ref "RedisUrl"
                     , ecsTaskDefinitionKeyValuePair
                         & ecstdkvpName ?~ "GITHUB_APP_ID"
                         & ecstdkvpValue ?~ Ref "GitHubAppId"
@@ -104,10 +104,10 @@ taskDefinitionResources =
                         & ecstdkvpValue ?~ Join "" ["https://", fqdnRef]
                     , ecsTaskDefinitionKeyValuePair
                         & ecstdkvpName ?~ "DATABASE_URL"
-                        & ecstdkvpValue ?~ databaseURL
+                        & ecstdkvpValue ?~ Ref "DatabaseUrl"
                     , ecsTaskDefinitionKeyValuePair
                         & ecstdkvpName ?~ "REDIS_URL"
-                        & ecstdkvpValue ?~ redisURL
+                        & ecstdkvpValue ?~ Ref "RedisUrl"
                     , ecsTaskDefinitionKeyValuePair
                         & ecstdkvpName ?~ "GITHUB_APP_ID"
                         & ecstdkvpValue ?~ Ref "GitHubAppId"
@@ -172,8 +172,8 @@ backendMemoryReservation = 392
 
 -- brittany-disable-next-binding
 
-databaseURL :: Val Text
-databaseURL = Join ""
+_databaseURL :: Val Text
+_databaseURL = Join ""
     [ "postgres://"
     , Ref "DBUsername", ":"
     , Ref "DBPassword", "@"
@@ -184,8 +184,8 @@ databaseURL = Join ""
 
 -- brittany-disable-next-binding
 
-redisURL :: Val Text
-redisURL = Join ""
+_redisURL :: Val Text
+_redisURL = Join ""
     [ "redis://"
     , GetAtt "Cache" "RedisEndpoint.Address", ":"
     , GetAtt "Cache" "RedisEndpoint.Port", "/"

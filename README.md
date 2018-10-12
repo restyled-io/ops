@@ -33,4 +33,4 @@ bash-4.4# heroku config:set FOO=bar --app restyled-io
 
 ---
 
-[CHANGELOG](./CHANGELOG.md) | [LICENSE](./LICENSE)
+[LICENSE](./LICENSE)

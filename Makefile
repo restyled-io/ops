@@ -12,7 +12,6 @@ release: build
 .PHONY: shell
 shell: build
 	docker run --interactive --tty --rm \
-	  --env HEROKU_EMAIL \
-	  --env HEROKU_API_KEY \
+	  --env-file .env \
 	  --volume /var/run/docker.sock:/var/run/docker.sock \
 	  "$(IMAGE_NAME)" bash

@@ -15,8 +15,20 @@ checked_output() {
   rm output
 }
 
+notify_() {
+  # shellcheck disable=SC2181
+  if [ $? -eq 0 ]; then
+    notify "$app" "Deployed as $image"
+  else
+    notify "$app" "Error deploying $image" 1
+  fi
+}
+
 image=restyled/restyled.io:$1
 app=${2:-restyled-io}
+
+trap notify_ EXIT
+
 tmp=$(mktemp -d)
 cd "$tmp"
 

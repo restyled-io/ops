@@ -1,12 +1,28 @@
-FROM node:10.12.0-alpine
+FROM fpco/stack-build:lts as builder
 MAINTAINER Pat Brisbin <pbrisbin@gmail.com>
+RUN stack upgrade
 
 ENV LANG en_US.UTF-8
-RUN apk add --update bash curl
+ENV PATH /root/.local/bin:$PATH
 
-# Add Heroku CLI
-ENV HEROKU_VERSION=7.16.8
-RUN npm install -g heroku@$HEROKU_VERSION
+RUN mkdir -p /src
+WORKDIR /src
+
+COPY stack.yaml /src/
+RUN stack setup
+
+COPY package.yaml /src/
+RUN stack install --dependencies-only
+
+COPY app /src/app
+COPY src /src/src
+COPY LICENSE /src/
+
+RUN stack install
+
+FROM fpco/stack-run:lts
+MAINTAINER Pat Brisbin <pbrisbin@gmail.com>
+ENV LANG en_US.UTF-8
 
 # Add Docker client
 ENV DOCKER_ARCHIVE docker-17.03.1-ce.tgz
@@ -15,4 +31,7 @@ RUN \
   curl -fsSLO "$DOCKER_SRC_URL" && \
   tar --strip-components=1 -xvzf "$DOCKER_ARCHIVE" -C /usr/local/bin
 
-COPY files /
+COPY --from=builder /root/.local/bin/hooks /usr/local/bin/hooks
+
+ENTRYPOINT []
+CMD ["hooks"]

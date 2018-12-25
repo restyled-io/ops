@@ -1,0 +1,35 @@
+name: hooks
+version: 0.0.0.0
+license: MIT
+
+ghc-options:
+  - -Wall
+  - -Werror
+
+dependencies:
+  - base >=4.7 && <5
+
+library:
+  source-dirs: src
+  dependencies:
+    - aeson
+    - aeson-casing
+    - bytestring
+    - http-types
+    - load-env
+    - process
+    - pushover
+    - scotty
+    - text
+    - wai-extra
+
+executables:
+  hooks:
+    main: Main.hs
+    source-dirs: app
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - hooks

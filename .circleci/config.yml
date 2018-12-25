@@ -1,0 +1,43 @@
+version: 2.0
+
+jobs:
+  build:
+    docker:
+      - image: quay.io/haskell_works/stack-build-minimal
+        environment:
+          STACK_ARGUMENTS: --no-terminal
+    steps:
+      - checkout
+      - run:
+          name: Digest
+          command: git ls-files | xargs md5sum > digest
+      - restore_cache:
+          keys:
+            # yamllint disable-line rule:line-length
+            - v1-{{ .Branch }}-{{ checksum "stack.yaml" }}-{{ checksum "digest" }}
+            - v1-{{ .Branch }}-{{ checksum "stack.yaml" }}-
+            - v1-{{ .Branch }}
+            - v1-
+      - run:
+          name: Dependencies
+          command: |
+            make setup setup.lint
+            curl "$HLINT_YAML_SRC" > .hlint.yaml
+          environment:
+            # yamllint disable-line rule:line-length
+            HLINT_YAML_SRC: https://raw.githubusercontent.com/pbrisbin/dotfiles/master/hlint.yaml
+      - run:
+          name: Build
+          command: make build
+      - save_cache:
+          # yamllint disable-line rule:line-length
+          key: v1-{{ .Branch }}-{{ checksum "stack.yaml" }}-{{ checksum "digest" }}
+          paths:
+            - ~/.stack
+            - ./.stack-work
+      - run:
+          name: Test
+          command: make test
+      - run:
+          name: Lint
+          command: make lint

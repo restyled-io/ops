@@ -5,10 +5,10 @@ module Hooks.Handler
     )
 where
 
-import Data.Foldable (traverse_)
-import qualified Hooks.Restyled as Restyled
-import Network.HTTP.Types.Status (status200)
-import Web.Scotty
+import           Data.Foldable             (traverse_)
+import qualified Hooks.Restyled            as Restyled
+import           Network.HTTP.Types.Status (status200)
+import           Web.Scotty
 
 hooksHandler :: ScottyM ()
 hooksHandler = post "/hooks" $ do

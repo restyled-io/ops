@@ -3,9 +3,9 @@ module Hooks.App
     )
 where
 
-import Hooks.Handler
-import System.Environment (lookupEnv)
-import Web.Scotty
+import           Hooks.Handler
+import           System.Environment (lookupEnv)
+import           Web.Scotty
 
 appMain :: IO ()
 appMain = do

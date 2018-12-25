@@ -5,16 +5,16 @@ module Hooks.Quay
     )
 where
 
-import Data.Aeson
-import Data.Aeson.Casing
-import Data.Text (Text)
-import GHC.Generics
+import           Data.Aeson
+import           Data.Aeson.Casing
+import           Data.Text         (Text)
+import           GHC.Generics
 
 data QuayBuild = QuayBuild
-    { qbNamespace :: Text
-    , qbName :: Text
-    , qbDockerUrl :: Text
-    , qbDockerTags :: [Text]
+    { qbNamespace    :: Text
+    , qbName         :: Text
+    , qbDockerUrl    :: Text
+    , qbDockerTags   :: [Text]
     , qbErrorMessage :: Maybe Text
     }
     deriving Generic

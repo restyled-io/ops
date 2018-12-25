@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE RecordWildCards   #-}
 
 module Hooks.Restyled
     ( fromQuayBuild
@@ -7,14 +7,14 @@ module Hooks.Restyled
     )
 where
 
-import Control.Applicative ((<|>))
-import Control.Monad (guard)
-import Data.Maybe (listToMaybe)
-import Data.Text (Text, unpack)
-import qualified Data.Text as T
-import Hooks.Quay
-import System.Environment (getEnv)
-import System.Process (callProcess)
+import           Control.Applicative ((<|>))
+import           Control.Monad       (guard)
+import           Data.Maybe          (listToMaybe)
+import           Data.Text           (Text, unpack)
+import qualified Data.Text           as T
+import           Hooks.Quay
+import           System.Environment  (getEnv)
+import           System.Process      (callProcess)
 
 data App
     = Restyled Text Text

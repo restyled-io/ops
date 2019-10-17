@@ -7,7 +7,41 @@ set -eu
 
 usage() {
   cat <<EOM
-TODO
+docker-build-remote-cache [OPTION...] [-- [DOCKER BUILD OPTION...]]
+
+Options:
+
+  -r    Registry namespace
+  -n    Repository name
+  -b    Branch (used for caches)
+  -t    Desired release tag
+
+Example:
+
+  docker-build-remote-cache \
+    -r restyled \
+    -n restyled.io \
+    -b pb/example \
+    -t v1.0
+
+  This will,
+
+    1. Pull stage caches from:
+
+       - restyled/restyled.io:pb-example-{...}
+       - restyled/restyled.io:master-{...}
+       - restyled/restyled.io:{...}
+
+    2. Push stage caches to:
+
+       - restyled/restyled.io:pb-example-{...}
+       - restyled/restyled.io:{...}
+
+    3. Push a final, runtime image to restyled/restyled.io:v1.0
+
+NOTE: The process assumes you have a two-stage build and the first stage is
+named specifically "builder".
+
 EOM
 }
 

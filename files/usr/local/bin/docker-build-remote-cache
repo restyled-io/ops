@@ -91,10 +91,10 @@ while getopts r:n:b:t: opt; do
 done
 shift $((OPTIND - 1))
 
-[[ -z ${registry:=""} ]] && die_usage "-r is required"
-[[ -z ${name:=""} ]] && die_usage "-n is required"
-[[ -z ${branch:=""} ]] && die_usage "-b is required"
-[[ -z ${tag:=""} ]] && die_usage "-t is required"
+[[ -z ${registry:-""} ]] && die_usage "-r is required"
+[[ -z ${name:-""} ]] && die_usage "-n is required"
+[[ -z ${branch:-""} ]] && die_usage "-b is required"
+[[ -z ${tag:-""} ]] && die_usage "-t is required"
 
 pull_cached "" master- "$branch-"
 

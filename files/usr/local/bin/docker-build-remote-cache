@@ -46,7 +46,7 @@ while getopts r:n:b:t: opt; do
   case "$opt" in
     r) registry="$OPTARG" ;;
     n) name="$OPTARG" ;;
-    b) branch=${OPTARG//\//} ;;
+    b) branch=${OPTARG//\//-} ;;
     t) tag=$OPTARG ;;
     \?)
       usage

@@ -43,7 +43,7 @@ fi
 image_base=${image%:*}
 
 # pb/some-branch -> pb-some-branch
-branch=$CIRCLE_BRANCH
+branch=${CIRCLE_BRANCH:-""}
 branch=${branch:-$(git rev-parse --abbrev-ref HEAD)}
 branch=${branch//\//-}
 

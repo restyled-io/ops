@@ -70,8 +70,9 @@ push_cached() {
   for prefix; do
     for stage in builder runtime; do
       echo ":: Pushing cached $stage stage (prefix=$prefix)"
-      docker tag "$name:built-$stage" "$registry/$name:${prefix}cached-$stage"
-      docker push "$registry/$name:${prefix}cached-$stage"
+      if docker tag "$name:built-$stage" "$registry/$name:${prefix}cached-$stage"; then
+        docker push "$registry/$name:${prefix}cached-$stage"
+      fi
     done
   done
 }
@@ -96,6 +97,9 @@ shift $((OPTIND - 1))
 [[ -z ${branch:-""} ]] && die_usage "-b is required"
 [[ -z ${tag:-""} ]] && die_usage "-t is required"
 
+# Always push anything we've built
+trap 'push_cached "$branch-" ""' EXIT
+
 pull_cached "" master- "$branch-"
 
 echo ":: Building builder target"
@@ -116,8 +120,6 @@ docker build \
   --cache-from "$name:cached-runtime" \
   "$@" \
   .
-
-push_cached "$branch-" ""
 
 echo ":: Pushing final image"
 docker tag "$name:built-runtime" "$registry/$name:$tag"

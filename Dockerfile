@@ -5,7 +5,7 @@ ENV LANG en_US.UTF-8
 RUN apk add --update bash curl
 
 # Add Heroku CLI
-ENV HEROKU_VERSION=7.16.8
+ENV HEROKU_VERSION=7.33.3
 RUN npm install -g heroku@$HEROKU_VERSION
 
 # Add Docker client

@@ -5,8 +5,10 @@ build:
 .PHONY: shell
 shell: build
 	docker run --interactive --tty --rm \
-	  --env-file .env \
+	  --volume $(PWD):/src:ro \
+	  --volume $(HOME)/.docker/config.json:/root/.docker/config.json \
 	  --volume /var/run/docker.sock:/var/run/docker.sock \
+	  --workdir /src \
 	  restyled/ops bash
 
 # Declared as empty to help tab-completion

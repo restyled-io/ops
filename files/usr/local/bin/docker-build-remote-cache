@@ -46,10 +46,10 @@ image_base=${image%:*}
 branch=$(git rev-parse --abbrev-ref HEAD)
 branch=${branch//\//-}
 
-pull_cached 2>/dev/null || true
+pull_cached || true
 
 # Always push anything we've built on EXIT
-trap 'push_cached 2>/dev/null || true' EXIT
+trap 'push_cached || true' EXIT
 
 echo ":: Building builder image"
 docker build \

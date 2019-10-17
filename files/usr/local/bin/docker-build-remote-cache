@@ -98,21 +98,19 @@ shift $((OPTIND - 1))
 
 pull_cached "" master- "$branch-"
 
-echo ":: Building builder stage"
-docker build \
-  --tag "$name:built-builder" \
-  --target builder \
-  --cache-from "$name:built-builder" \
-  --cache-from "$name:cached-builder" \
-  "$@" \
-  .
-
-echo ":: Building runtime stage"
+echo ":: Building runtime image"
 docker build \
   --tag "$name:built-runtime" \
   --cache-from "$name:cached-builder" \
-  --cache-from "$name:built-builder" \
   --cache-from "$name:cached-runtime" \
+  "$@" \
+  .
+
+# Should be 100% cached from what we just did; this is just tagging.
+echo ":: Building builder target"
+docker build \
+  --tag "$name:built-builder" \
+  --target builder \
   --cache-from "$name:built-runtime" \
   "$@" \
   .

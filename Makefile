@@ -3,13 +3,8 @@ build:
 	docker build --tag restyled/ops .
 
 .PHONY: shell
-shell: build
-	docker run --interactive --tty --rm \
-	  --volume $(PWD):/src:ro \
-	  --volume $(HOME)/.docker/config.json:/root/.docker/config.json \
-	  --volume /var/run/docker.sock:/var/run/docker.sock \
-	  --workdir /src \
-	  restyled/ops bash
+shell:
+	@echo "Use make && ./bin/docker-run bash" >&2
 
 # Declared as empty to help tab-completion
 RELEASE_TAG =? ""

@@ -1,0 +1,16 @@
+#!/bin/sh
+docker_run() {
+  if [ -t 1 ]; then
+    exec docker run --tty "$@"
+  else
+    exec docker run "$@"
+  fi
+}
+
+docker_run --rm --interactive \
+  --volume "$PWD":/src:ro \
+  --volume "$HOME"/.aws:/root/.aws:ro \
+  --volume "$HOME"/.docker/config.json:/root/.docker/config.json \
+  --volume /var/run/docker.sock:/var/run/docker.sock \
+  --workdir /src \
+  restyled/ops "$@"

@@ -1,0 +1,31 @@
+#!/bin/sh
+set -eu
+
+: "${RESTYLED_CLUSTER:=restyled-prod}"
+: "${RESTYLED_TASK_DEFINITION:=restyled-prod-backend}"
+: "${RESTYLED_CONTAINER:=restyled-backend}"
+: "${RESTYLED_DEPLOY_TIMEOUT:=900}"
+
+echo "Deploying webhooks service..."
+ecs deploy "$RESTYLED_CLUSTER" webhooks \
+  --region us-east-1 \
+  --no-deregister \
+  --rollback \
+  --timeout "$RESTYLED_DEPLOY_TIMEOUT" \
+  "$@"
+
+for cmd in health sync-marketplace; do
+  echo "Deploying $cmd scheduled task..."
+  ecs cron "$RESTYLED_CLUSTER" "$RESTYLED_TASK_DEFINITION" "$cmd" \
+    --region us-east-1 \
+    --no-deregister \
+    --rollback \
+    --command "$RESTYLED_CONTAINER" "[\"/app/restyled.io\",\"$cmd\"]" \
+    "$@"
+done
+
+echo "Resetting task definition command..."
+ecs update "$RESTYLED_TASK_DEFINITION" \
+  --region us-east-1 \
+  --no-deregister \
+  --command "$RESTYLED_CONTAINER" '["/app/restyled.io","webhooks"]'

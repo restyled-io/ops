@@ -2,7 +2,11 @@ FROM node:10.12.0-alpine
 MAINTAINER Pat Brisbin <pbrisbin@gmail.com>
 
 ENV LANG en_US.UTF-8
-RUN apk add --update bash curl git
+RUN apk add --update bash curl git py-pip
+
+# Add ecs-deploy
+RUN pip install --upgrade pip
+RUN pip install ecs-deploy
 
 # Add Heroku CLI
 ENV HEROKU_VERSION=7.33.3

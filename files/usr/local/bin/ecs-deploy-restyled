@@ -14,7 +14,7 @@ ecs deploy "$RESTYLED_CLUSTER" webhooks \
   --timeout "$RESTYLED_DEPLOY_TIMEOUT" \
   "$@"
 
-for cmd in health sync-marketplace; do
+for cmd in health sync-marketplace reconcile; do
   echo "Deploying $cmd scheduled task..."
   ecs cron "$RESTYLED_CLUSTER" "$RESTYLED_TASK_DEFINITION" "$cmd" \
     --region us-east-1 \

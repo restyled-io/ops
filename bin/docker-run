@@ -12,6 +12,7 @@ if [ "${BUILD:-1}" -eq 1 ]; then
 fi
 
 docker_run --rm --interactive \
+  --env-file "$PWD"/.env \
   --volume "$PWD":/src:ro \
   --volume "$HOME"/.aws:/root/.aws:ro \
   --volume "$HOME"/.docker/config.json:/root/.docker/config.json \

@@ -14,5 +14,4 @@ if [ -z "$redis_url" ]; then
 fi
 
 echo "=> REDIS_URL=$redis_url..."
-./bin/docker-run ecs-deploy-restyled \
-  --env restyled-backend REDIS_URL "$redis_url"
+ecs-deploy-restyled --env restyled REDIS_URL "$redis_url"

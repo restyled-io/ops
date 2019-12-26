@@ -2,13 +2,10 @@
 set -eu
 
 : "${RESTYLED_CLUSTER:=restyled-prod}"
-: "${RESTYLED_DEPLOY_TIMEOUT:=900}"
 
 echo "Deploying webhooks service..."
-ecs deploy "$RESTYLED_CLUSTER" webhooks \
-  --region us-east-1 --no-deregister --rollback \
-  --timeout "$RESTYLED_DEPLOY_TIMEOUT" \
-  "$@"
+ecs deploy "$RESTYLED_CLUSTER" webhooks --timeout 900 \
+  --region us-east-1 --no-deregister --rollback "$@"
 
 for cmd in health sync-marketplace reconcile; do
   echo "Deploying $cmd scheduled task..."

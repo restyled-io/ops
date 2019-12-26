@@ -2,10 +2,6 @@
 build:
 	docker build --tag restyled/ops .
 
-.PHONY: shell
-shell:
-	@echo "Use make && ./bin/docker-run bash" >&2
-
 # Declared as empty to help tab-completion
 RELEASE_TAG =? ""
 

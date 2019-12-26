@@ -9,7 +9,7 @@ RUN pip install --upgrade pip
 RUN pip install ecs-deploy
 
 # Add Heroku CLI
-ENV HEROKU_VERSION=7.33.3
+ENV HEROKU_VERSION=7.35.0
 RUN npm install -g heroku@$HEROKU_VERSION
 
 # Add Docker client

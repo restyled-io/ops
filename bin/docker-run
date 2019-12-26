@@ -7,6 +7,10 @@ docker_run() {
   fi
 }
 
+if [ "${BUILD:-1}" -eq 1 ]; then
+  make build
+fi
+
 docker_run --rm --interactive \
   --volume "$PWD":/src:ro \
   --volume "$HOME"/.aws:/root/.aws:ro \

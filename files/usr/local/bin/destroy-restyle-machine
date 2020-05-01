@@ -1,0 +1,31 @@
+#!/bin/sh
+set -e
+
+if [ -z "$1" ]; then
+  echo "Usage: destroy-restyle-machine <name>" >&2
+  exit 64
+fi
+
+machine_name=$1
+machine_id=$(
+  restyled-api "/admin/machines" |
+    jq -r '.[] | select(.name == "'"$1"'") | .id' |
+    head -n 1
+)
+
+if [ -z "$machine_id" ]; then
+  echo "No such machine" >&2
+  exit 1
+fi
+
+printf 'Disabling %s (id=%s)\n' "$machine_name" "$machine_id"
+jo enabled=false | restyled-api "/admin/machines/$machine_id" -X PATCH -d @- /dev/null
+
+printf 'Waiting for %s to drain\n' "$machine_name"
+drain-restyle-machine "$machine_id" "$machine_name"
+
+printf 'Deleting %s from Restyled\n' "$machine_name"
+restyled-api "/admin/machines/$machine_id" -X DELETE
+
+docker-machine stop "$machine_name"
+docker-machine rm -y "$machine_name"

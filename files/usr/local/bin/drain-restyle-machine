@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -eu
+
+machine_id=$1
+machine_name=${2:-""}
+
+job_count=$(restyled-api "/admin/machines/$machine_id" | jq -r '.jobCount')
+
+if [[ -z "$job_count" ]]; then
+  echo "[Warn] unknown Restyle Machine, assuming drained" >&2
+  exit 0
+fi
+
+while ((job_count != 0)); do
+  printf 'Waiting for %s to show jobCount:0...\n' "$machine_id"
+  sleep 2
+
+  job_count=$(restyled-api "/admin/machines/$machine_id" | jq -r '.jobCount')
+done
+
+if [[ -z "$machine_name" ]]; then
+  echo "[Warn] not checking docker-ps without machine-name" >&2
+  exit 0
+fi
+
+# shellcheck disable=SC2046
+eval $(docker-machine env --shell sh/bash "$machine_name")
+
+if [[ -z "$DOCKER_HOST" ]]; then
+  echo "[Warn] unable to connect to Machine, assuming drained" >&2
+  exit 0
+fi
+
+ps_count=$(docker ps | wc -l)
+
+while ((ps_count != 1)); do
+  printf 'Waiting for %s to show empty in docker ps...\n' "$machine_name"
+  sleep 2
+
+  ps_count=$(docker ps | wc -l)
+done

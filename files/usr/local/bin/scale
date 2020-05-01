@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+set -eu
+
+: "${RESTYLED_CLUSTER:=restyled-prod}"
+
+case "${1:-""}" in
+  up)
+    machines_desired=4
+    webhooks_desired=8
+    ;;
+  down)
+    machines_desired=1
+    webhooks_desired=2
+    ;;
+  *)
+    echo "usage: scale <up|down>" >&2
+    exit 64
+    ;;
+esac
+
+restyled_machine_names() {
+  restyled-api "/admin/machines" |
+    jq --raw-output '.[] | .name' |
+    sort -r -n
+}
+
+machines_current=$(restyled_machine_names | wc -l)
+machines_diff=$((machines_current - machines_desired))
+
+if ((machines_diff > 0)); then
+  printf 'Removing %s Restyle Machine(s) [%s -> %s]\n' \
+    "$machines_diff" "$machines_current" "$machines_desired"
+
+  restyled_machine_names |
+    tail -n "$machines_diff" |
+    while read -r machine_name; do
+      destroy-restyle-machine "$machine_name"
+    done
+fi
+
+if ((machines_diff < 0)); then
+  machines_todo=$((machines_diff * -1))
+  printf 'Adding %s Restyle Machine(s) [%s -> %s]\n' \
+    "$machines_todo" "$machines_current" "$machines_desired"
+
+  read -r prefix n < <(restyled_machine_names | head -n 1 | sed 's/-\([0-9]\+\)$/ \1/')
+
+  while ((machines_todo > 0)); do
+    ((n++))
+    ((machines_todo--))
+
+    create-restyle-machine "$prefix-$n"
+  done
+fi
+
+ecs scale --timeout 900 --region us-east-1 \
+  "$RESTYLED_CLUSTER" webhooks "$webhooks_desired"

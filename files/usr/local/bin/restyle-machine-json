@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+
+if [ -z "$1" ]; then
+  echo "usage: restyle-machine-json <name>" >&2
+  exit 64
+fi
+
+machine_name=$1
+shift
+
+# shellcheck disable=SC2046
+eval $(docker-machine env --shell sh/bash "$machine_name")
+
+jo \
+  "name=$machine_name" \
+  "host=$DOCKER_HOST" \
+  "certificateAuthority=$(cat "$DOCKER_CERT_PATH"/ca.pem)" \
+  "certificate=$(cat "$DOCKER_CERT_PATH"/cert.pem)" \
+  "privateKey=$(cat "$DOCKER_CERT_PATH"/key.pem)"

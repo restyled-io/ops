@@ -10,7 +10,7 @@ docker_run() {
 }
 
 if [ "${BUILD:-1}" -eq 1 ]; then
-  make build
+  make build >&2
 fi
 
 docker_run --rm --interactive \

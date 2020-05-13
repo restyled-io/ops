@@ -12,8 +12,13 @@ case "${1:-""}" in
     machines_desired=1
     webhooks_desired=2
     ;;
+  to)
+    shift
+    machines_desired=$1
+    webhooks_desired=$2
+    ;;
   *)
-    echo "usage: scale <up|down>" >&2
+    echo "usage: scale <up|down|to <machines> <webhooks>>" >&2
     exit 64
     ;;
 esac

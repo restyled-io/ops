@@ -48,13 +48,9 @@ if ((machines_diff < 0)); then
   printf 'Adding %s Restyle Machine(s) [%s -> %s]\n' \
     "$machines_todo" "$machines_current" "$machines_desired"
 
-  read -r prefix n < <(restyled_machine_names | head -n 1 | sed 's/-\([0-9]\+\)$/ \1/')
-
   while ((machines_todo > 0)); do
-    ((n++))
     ((machines_todo--))
-
-    create-restyle-machine "$prefix-$n"
+    create-restyle-machine
   done
 fi
 

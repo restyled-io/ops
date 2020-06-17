@@ -1,25 +1,23 @@
 #!/usr/bin/env bash
 set -e
 
-if [ -n "$1" ]; then
-  machine_name=$1
-  instance_type=${2:-t2.micro}
-  root_size=${3:-16}
-else
-  echo "Existing machines:"
-  restyled-api "/admin/machines" | jq -r '.[] | .name' | sort -n | sed 's/^/  /'
-  echo
-  read -r -p "Machine name? " machine_name
-  read -r -p "Instance type [t2.micro]? " instance_type
-  read -r -p "Root size in GB [16]? " root_size
-  instance_type=${instance_type:-t2.micro}
-  root_size=${root_size:-16}
-fi
+get_next_machine_name() {
+  local prefix n
 
-if [ -z "$machine_name" ]; then
-  echo "Empty machine name" >&2
-  exit 1
-fi
+  read -r prefix n < <(
+    restyled-api "/admin/machines" |
+      jq --raw-output '.[] | .name' |
+      sort -r -n |
+      head -n 1 |
+      sed 's/-\([0-9]\+\)$/ \1/'
+  )
+
+  echo "$prefix-$((n + 1))"
+}
+
+machine_name=$(get_next_machine_name)
+instance_type=t2.micro
+root_size=16
 
 printf 'Creating new docker machine (%s)\n' "$machine_name"
 docker-machine create \

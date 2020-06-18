@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+set -eu
+
+webhooks_queue_depth() {
+  echo "llen restyled:hooks:webhooks" |
+    heroku redis:cli --confirm restyled-io --app restyled-io 2>&1 |
+    grep -v 'Warning\|Connecting\|Disconnected' |
+    grep -v '^ *$'
+}
+
+up_threshold=50
+down_threshold=0
+
+scale=${1:-down}
+
+while true; do
+  depth=$(webhooks_queue_depth)
+
+  case "$scale" in
+    down)
+      if ((depth >= up_threshold)); then
+        echo "Scaling up ($depth >= $up_threshold)"
+        if scale up; then
+          clear
+          echo "Successfully scaled up ($depth >= $up_threshold)"
+          scale=up
+        else
+          echo "Scaling failed, will retry" >&2
+        fi
+      fi
+      ;;
+    up)
+      if ((depth <= down_threshold)); then
+        echo "Scaling down ($depth <= $down_threshold)"
+        if scale down; then
+          clear
+          echo "Successfully scaled down ($depth <= $down_threshold)"
+          scale=down
+        else
+          echo "Scaling failed, will retry" >&2
+        fi
+      fi
+      ;;
+  esac
+
+  sleep 30
+done

@@ -21,11 +21,10 @@ while true; do
       if ((depth >= up_threshold)); then
         echo "Scaling up ($depth >= $up_threshold)"
         if scale up; then
-          clear
-          echo "Successfully scaled up ($depth >= $up_threshold)"
+          notify "restyled[ops]" "Scaled up ($depth >= $up_threshold)"
           scale=up
         else
-          echo "Scaling failed, will retry" >&2
+          notify "restyled[ops]" "Scaling failed, will retry"
         fi
       fi
       ;;
@@ -33,11 +32,10 @@ while true; do
       if ((depth <= down_threshold)); then
         echo "Scaling down ($depth <= $down_threshold)"
         if scale down; then
-          clear
-          echo "Successfully scaled down ($depth <= $down_threshold)"
+          notify "restyled[ops]" "Scaled down ($depth <= $down_threshold)"
           scale=down
         else
-          echo "Scaling failed, will retry" >&2
+          notify "restyled[ops]" "Scaling failed, will retry"
         fi
       fi
       ;;

@@ -30,7 +30,7 @@ RUN \
   rm -rf "/tmp/jo-$JO_VERSION"
 
 # Package installs
-RUN pip install --upgrade pip==20.1
+RUN pip install --upgrade pip==20.2b1
 ENV ECS_DEPLOY_VERSION 1.10.1
 RUN pip install ecs-deploy==$ECS_DEPLOY_VERSION
 ENV AWSCLI_VERSION 1.18.85

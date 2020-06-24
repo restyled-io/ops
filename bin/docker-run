@@ -13,12 +13,4 @@ if [ "${BUILD:-1}" -eq 1 ]; then
   make build >&2
 fi
 
-docker_run --rm --interactive \
-  --env-file "$PWD"/.env \
-  --volume "$PWD":/src:ro \
-  --volume "$HOME"/.aws:/root/.aws:ro \
-  --volume "$HOME"/.docker/config.json:/root/.docker/config.json \
-  --volume "$PWD"/.docker-machine:/root/.docker/machine \
-  --volume /var/run/docker.sock:/var/run/docker.sock \
-  --workdir /src \
-  restyled/ops "$@"
+docker_run --rm --interactive --env-file "$PWD"/.env restyled/ops "$@"

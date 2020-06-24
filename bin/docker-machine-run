@@ -3,11 +3,9 @@
 # shellcheck disable=SC2046
 eval $(docker-machine env restyled-ops)
 
-if [ "${BUILD:-1}" -eq 1 ]; then
-  make build >&2
-fi
-
 docker stop restyled-ops || true
 docker rm restyled-ops || true
+docker build \
+  --tag restyled/ops .
 docker run --name restyled-ops --detach --env-file "$PWD"/.env restyled/ops "$@"
 exec docker logs -f restyled-ops

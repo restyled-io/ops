@@ -1,0 +1,7 @@
+#!/bin/sh
+exec docker-machine create \
+  --driver amazonec2 \
+  --amazonec2-instance-type t3.nano \
+  --amazonec2-iam-instance-profile RestyledOps \
+  --amazonec2-monitoring \
+  restyled-ops

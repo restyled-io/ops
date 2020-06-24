@@ -1,0 +1,4 @@
+#!/bin/sh
+# shellcheck disable=SC2046
+eval $(docker-machine env restyled-ops)
+exec docker logs -f restyled-ops

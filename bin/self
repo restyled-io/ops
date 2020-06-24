@@ -1,0 +1,64 @@
+#!/bin/sh
+set -eu
+
+: "${RESTYLED_OPS_MACHINE_NAME:=restyled-ops}"
+: "${RESTYLED_OPS_IMAGE_TAG:=restyled/ops}"
+: "${RESTYLED_OPS_CONTAINER_NAME:=restyled-ops}"
+
+if ! docker-machine ls | grep -q "^$RESTYLED_OPS_MACHINE_NAME "; then
+  docker-machine create \
+    --driver amazonec2 \
+    --amazonec2-instance-type t3.nano \
+    --amazonec2-iam-instance-profile RestyledOps \
+    --amazonec2-monitoring \
+    "$RESTYLED_OPS_MACHINE_NAME"
+fi
+
+# shellcheck disable=SC2046
+eval $(docker-machine env "$RESTYLED_OPS_MACHINE_NAME")
+
+if [ -z "$DOCKER_HOST" ]; then
+  echo "Unable to connect to Docker machine" >&2
+  exit 1
+fi
+
+case "$1" in
+  build)
+    docker build --tag "$RESTYLED_OPS_IMAGE_TAG" .
+    ;;
+
+  start)
+    docker run \
+      --name "$RESTYLED_OPS_CONTAINER_NAME" \
+      --detach \
+      --env-file "$PWD"/.env \
+      "$RESTYLED_OPS_IMAGE_TAG" scale-watch
+    ;;
+
+  stop)
+    docker stop "$RESTYLED_OPS_CONTAINER_NAME"
+    docker rm "$RESTYLED_OPS_CONTAINER_NAME"
+    ;;
+
+  tail)
+    exec docker logs \
+      --tail 30 \
+      --follow \
+      "$RESTYLED_OPS_CONTAINER_NAME"
+    ;;
+
+  exec)
+    shift
+
+    if [ -t 1 ]; then
+      exec docker exec -it "$RESTYLED_OPS_CONTAINER_NAME" "$@"
+    else
+      exec docker exec "$RESTYLED_OPS_CONTAINER_NAME" "$@"
+    fi
+    ;;
+
+  *)
+    echo "Invalid sub-command (build|start|stop|tail|exec)" >&2
+    exit 64
+    ;;
+esac

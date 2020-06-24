@@ -36,6 +36,8 @@ RUN pip install ecs-deploy==$ECS_DEPLOY_VERSION
 ENV AWSCLI_VERSION 1.18.85
 RUN pip install awscli==$AWSCLI_VERSION
 ENV HEROKU_VERSION 7.35.0
+# https://stackoverflow.com/questions/52196518/could-not-get-uid-gid-when-building-node-docker
+RUN npm config set unsafe-perm true
 RUN npm install -g heroku@$HEROKU_VERSION
 
 # Binaries

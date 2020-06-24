@@ -33,6 +33,8 @@ RUN \
 RUN pip install --upgrade pip==20.1
 ENV ECS_DEPLOY_VERSION 1.10.1
 RUN pip install ecs-deploy==$ECS_DEPLOY_VERSION
+ENV AWSCLI_VERSION 1.18.85
+RUN pip install awscli==$AWSCLI_VERSION
 ENV HEROKU_VERSION 7.35.0
 RUN npm install -g heroku@$HEROKU_VERSION
 
@@ -51,3 +53,5 @@ RUN \
   chmod +x /usr/local/bin/docker-machine
 
 COPY files /
+COPY entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]

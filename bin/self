@@ -57,8 +57,14 @@ case "$1" in
     fi
     ;;
 
+  deploy)
+    "$0" build
+    "$0" stop || true
+    "$0" start
+    ;;
+
   *)
-    echo "Invalid sub-command (build|start|stop|tail|exec)" >&2
+    echo "Invalid sub-command (build|start|stop|tail|exec|deploy)" >&2
     exit 64
     ;;
 esac

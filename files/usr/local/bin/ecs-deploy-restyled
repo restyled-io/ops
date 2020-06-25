@@ -1,0 +1,14 @@
+#!/bin/sh
+set -eu
+
+: "${RESTYLED_CLUSTER:=restyled-prod}"
+
+echo "Deploying webhooks service..."
+ecs deploy "$RESTYLED_CLUSTER" webhooks --timeout 900 \
+  --region us-east-1 --no-deregister --rollback "$@"
+
+for cmd in health sync-marketplace reconcile; do
+  echo "Deploying $cmd scheduled task..."
+  ecs cron "$RESTYLED_CLUSTER" "restyled-prod-$cmd" "$cmd" \
+    --region us-east-1 --no-deregister --rollback "$@"
+done

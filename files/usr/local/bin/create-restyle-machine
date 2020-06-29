@@ -7,9 +7,9 @@ get_next_machine_name() {
   read -r prefix n < <(
     restyled-api "/admin/machines" |
       jq --raw-output '.[] | .name' |
-      sort -r -n |
-      head -n 1 |
-      sed 's/-\([0-9]\+\)$/ \1/'
+      sed 's/-\([0-9]\+\)$/ \1/' |
+      sort -r -n -k 2 |
+      head -n 1
   )
 
   echo "$prefix-$((n + 1))"

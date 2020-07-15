@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -eu
 
+get_heroku_redis_url() {
+  heroku config --app restyled-io 2>&1 |
+    sed '/^REDIS_URL: *\(.*\)$/!d; s//\1/'
+}
+
 webhooks_queue_depth() {
   echo "llen restyled:hooks:webhooks" |
     heroku redis:cli --confirm restyled-io --app restyled-io 2>&1 |
@@ -13,6 +18,16 @@ down_threshold=0
 scale=down
 
 while true; do
+  this_redis_url=$(get_heroku_redis_url)
+  prev_redis_url=${prev_redis_url:-$this_redis_url}
+
+  if [[ "$this_redis_url" != "$prev_redis_url" ]]; then
+    echo "=> REDIS_URL=$this_redis_url..."
+    ecs-deploy-restyled --env restyled REDIS_URL "$this_redis_url"
+    notify "restyled[ops]" "Updated REDIS_URL"
+    prev_redis_url=$this_redis_url
+  fi
+
   depth=$(webhooks_queue_depth)
 
   case "$scale" in

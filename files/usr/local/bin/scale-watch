@@ -10,8 +10,7 @@ webhooks_queue_depth() {
 
 up_threshold=50
 down_threshold=0
-
-scale=${1:-down}
+scale=down
 
 while true; do
   depth=$(webhooks_queue_depth)

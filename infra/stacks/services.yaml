@@ -1,0 +1,527 @@
+Parameters:
+  Environment:
+    Type: String
+    Description: |
+      Environment name, e.g. "prod". A Stack using the same Environment is
+      expected to exist and Export values we need.
+    Default: prod
+
+  RestyledImage:
+    Type: String
+    Default: restyled/restyled.io:be883237c2
+  RestylerImage:
+    Type: String
+    Default: restyled/restyler:c613407996
+  AppsWebhooksDesiredCount:
+    Type: Number
+    Default: 2
+
+Outputs:
+  AppsSecurityGroupId:
+    Description: Apps Security Group Id
+    Value: !GetAtt AppsSecurityGroup.GroupId
+    Export:
+      Name: !Sub "${Environment}-AppsSecurityGroupId"
+
+Mappings:
+  LogRetentions:
+    prod:
+      Apps: 14
+  AppsEnv:
+    prod:
+      AppRoot: https://restyled.io
+
+Resources:
+  # TODO: centralize this
+  StoreCloudWatchLogsPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Store CloudWatch Logs
+      PolicyDocument: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            }
+          ]
+        }
+      Roles:
+        - !Ref LogForwarderExecutionRole
+        - !Ref AppsTaskExecutionRole
+
+  # TODO: centralize this
+  GetSSMParameterPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: !Sub "Read SSM Parameters for restyled-${Environment}"
+      PolicyDocument: !Sub |
+          {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "ssm:GetParameters",
+                  "ssm:GetParameter"
+                ],
+                "Resource": [
+                  "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/restyled/${Environment}/*"
+                ]
+              }
+            ]
+          }
+      Roles:
+        - !Ref LogForwarderExecutionRole
+        - !Ref AppsTaskExecutionRole
+
+  LogForwarderExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "edgelambda.amazonaws.com",
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        }
+
+  LogForwarderInvokePermission:
+    Type: AWS::Lambda::Permission
+    DependsOn: LogForwarder
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LogForwarder
+      Principal: !Sub "logs.${AWS::Region}.amazonaws.com"
+      SourceAccount: !Ref AWS::AccountId
+      SourceArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:*"
+
+  LogForwarder:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "restyled-${Environment}-log-forwarder"
+      Description: |
+        Forward CloudWatch Logs to LogDNA
+
+      Runtime: nodejs10.x
+      Code:
+        S3Bucket: ops.restyled.io
+        S3Key: logdna-cloudwatch.zip
+      Handler: index.handler
+      Environment:
+        Variables:
+          ENV: !Ref Environment
+      Role: !GetAtt LogForwarderExecutionRole.Arn
+
+  # * Apps
+  AppsCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub "restyled-${Environment}-apps"
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
+
+  AppsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "restyled-${Environment}-apps"
+      GroupDescription: Apps Security Group, no Ingress
+      VpcId:
+        Fn::ImportValue: !Sub "${Environment}-VPCId"
+
+  AppsSecurityGroupEgress:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      GroupId: !GetAtt AppsSecurityGroup.GroupId
+      IpProtocol: -1
+      FromPort: -1
+      ToPort: -1
+
+  AppsRunTaskPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: !Sub "Run tasks in restyled-${Environment}-apps"
+      PolicyDocument: !Sub |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                  "ecs:RunTask"
+              ],
+              "Condition": {
+                "ArnEquals": {
+                  "ecs:cluster": "${AppsCluster.Arn}"
+                }
+              },
+              "Resource": [
+                  "*"
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": "iam:PassRole",
+              "Resource": [
+                  "*"
+              ],
+              "Condition": {
+                "StringLike": {
+                  "iam:PassedToService": "ecs-tasks.amazonaws.com"
+                }
+              }
+            }
+          ]
+        }
+      Roles:
+        - !Ref AppsEventsRole
+
+  AppsEventsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument: |
+        {
+          "Version": "2008-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "events.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        }
+
+  AppsTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument: |
+        {
+          "Version": "2008-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        }
+
+
+  # ** Webhooks
+  WebhooksService:
+    Type: AWS::ECS::Service
+    Properties:
+      LaunchType: FARGATE
+      Cluster: !Ref AppsCluster
+      ServiceName: Webhooks
+      TaskDefinition: !Ref WebhooksTaskDefinition
+      DesiredCount: !Ref AppsWebhooksDesiredCount
+      NetworkConfiguration:
+         AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !GetAtt AppsSecurityGroup.GroupId
+          Subnets: !Split
+            - ","
+            - Fn::ImportValue: !Sub "${Environment}-SubnetIds"
+
+  WebhooksTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub "restyled-${Environment}-webhooks"
+      ContainerDefinitions:
+        - Name: main
+          Image: !Ref RestyledImage
+          Command: [/app/restyled.io, webhooks]
+          Environment:
+            - Name: APPROOT
+              Value: !FindInMap [AppsEnv, !Ref Environment, AppRoot]
+            - Name: RESTYLER_IMAGE
+              Value: !Select [0, !Split [":", !Ref RestylerImage]]
+            - Name: RESTYLER_TAG
+              Value: !Select [1, !Split [":", !Ref RestylerImage]]
+          Secrets:
+            - Name: DATABASE_URL
+              ValueFrom: !Sub "/restyled/${Environment}/database-url"
+            - Name: GITHUB_RATE_LIMIT_TOKEN
+              ValueFrom: !Sub "/restyled/${Environment}/github-rate-limit-token"
+            - Name: REDIS_URL
+              ValueFrom: !Sub "/restyled/${Environment}/redis-url"
+            - Name: GITHUB_APP_ID
+              ValueFrom: !Sub "/restyled/${Environment}/github-app-id"
+            - Name: GITHUB_APP_KEY
+              ValueFrom: !Sub "/restyled/${Environment}/github-app-key"
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              "awslogs-group": !Ref WebhooksLogGroup
+              "awslogs-region": !Ref AWS::Region
+              "awslogs-stream-prefix": webhooks
+      Cpu: 256
+      Memory: 512
+      NetworkMode: awsvpc
+      ExecutionRoleArn: !GetAtt AppsTaskExecutionRole.Arn
+      RequiresCompatibilities: [FARGATE]
+
+  WebhooksLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "restyled/${Environment}/webhooks"
+      RetentionInDays: !FindInMap [LogRetentions, !Ref Environment, Apps]
+
+  WebhooksLogGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+        DestinationArn: !GetAtt LogForwarder.Arn
+        LogGroupName: !Ref WebhooksLogGroup
+        FilterPattern: ""
+
+  # ** Health
+  HealthScheduledTask:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: !Sub "Health task for restyled-${Environment}"
+      ScheduleExpression: rate(3 minutes)
+      State: ENABLED
+      Targets:
+        - Id: !Sub "restyled-${Environment}-health"
+          RoleArn: !GetAtt AppsEventsRole.Arn
+          Arn: !GetAtt AppsCluster.Arn
+          EcsParameters:
+            TaskDefinitionArn: !Ref HealthTaskDefinition
+            TaskCount: 1
+            LaunchType: FARGATE
+            NetworkConfiguration:
+              AwsVpcConfiguration:
+                AssignPublicIp: ENABLED
+                SecurityGroups:
+                  - !GetAtt AppsSecurityGroup.GroupId
+                Subnets: !Split
+                  - ","
+                  - Fn::ImportValue: !Sub "${Environment}-SubnetIds"
+
+  HealthTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub "restyled-${Environment}-health"
+      ContainerDefinitions:
+        - Name: main
+          Image: !Ref RestyledImage
+          Command: [/app/restyled.io, health]
+          Environment:
+            - Name: APPROOT
+              Value: !FindInMap [AppsEnv, !Ref Environment, AppRoot]
+            - Name: RESTYLER_IMAGE
+              Value: !Select [0, !Split [":", !Ref RestylerImage]]
+            - Name: RESTYLER_TAG
+              Value: !Select [1, !Split [":", !Ref RestylerImage]]
+          Secrets:
+            - Name: DATABASE_URL
+              ValueFrom: !Sub "/restyled/${Environment}/database-url"
+            - Name: GITHUB_RATE_LIMIT_TOKEN
+              ValueFrom: !Sub "/restyled/${Environment}/github-rate-limit-token"
+            - Name: REDIS_URL
+              ValueFrom: !Sub "/restyled/${Environment}/redis-url"
+            - Name: GITHUB_APP_ID
+              ValueFrom: !Sub "/restyled/${Environment}/github-app-id"
+            - Name: GITHUB_APP_KEY
+              ValueFrom: !Sub "/restyled/${Environment}/github-app-key"
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              "awslogs-group": !Ref HealthLogGroup
+              "awslogs-region": !Ref AWS::Region
+              "awslogs-stream-prefix": health
+      Cpu: 256
+      Memory: 512
+      NetworkMode: awsvpc
+      ExecutionRoleArn: !GetAtt AppsTaskExecutionRole.Arn
+      RequiresCompatibilities: [FARGATE]
+
+  HealthLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "restyled/${Environment}/health"
+      RetentionInDays: !FindInMap [LogRetentions, !Ref Environment, Apps]
+
+  HealthLogGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+        DestinationArn: !GetAtt LogForwarder.Arn
+        LogGroupName: !Ref HealthLogGroup
+        FilterPattern: ""
+
+  # ** Reconcile
+  ReconcileScheduledTask:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: !Sub "Reconcile task for restyled-${Environment}"
+      ScheduleExpression: rate(15 minutes)
+      State: ENABLED
+      Targets:
+        - Id: !Sub "restyled-${Environment}-reconcile"
+          RoleArn: !GetAtt AppsEventsRole.Arn
+          Arn: !GetAtt AppsCluster.Arn
+          EcsParameters:
+            TaskDefinitionArn: !Ref ReconcileTaskDefinition
+            TaskCount: 1
+            LaunchType: FARGATE
+            NetworkConfiguration:
+              AwsVpcConfiguration:
+                AssignPublicIp: ENABLED
+                SecurityGroups:
+                  - !GetAtt AppsSecurityGroup.GroupId
+                Subnets: !Split
+                  - ","
+                  - Fn::ImportValue: !Sub "${Environment}-SubnetIds"
+
+  ReconcileTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub "restyled-${Environment}-reconcile"
+      ContainerDefinitions:
+        - Name: main
+          Image: !Ref RestyledImage
+          Command: [/app/restyled.io, reconcile]
+          Environment:
+            - Name: APPROOT
+              Value: !FindInMap [AppsEnv, !Ref Environment, AppRoot]
+            - Name: RESTYLER_IMAGE
+              Value: !Select [0, !Split [":", !Ref RestylerImage]]
+            - Name: RESTYLER_TAG
+              Value: !Select [1, !Split [":", !Ref RestylerImage]]
+          Secrets:
+            - Name: DATABASE_URL
+              ValueFrom: !Sub "/restyled/${Environment}/database-url"
+            - Name: GITHUB_RATE_LIMIT_TOKEN
+              ValueFrom: !Sub "/restyled/${Environment}/github-rate-limit-token"
+            - Name: REDIS_URL
+              ValueFrom: !Sub "/restyled/${Environment}/redis-url"
+            - Name: GITHUB_APP_ID
+              ValueFrom: !Sub "/restyled/${Environment}/github-app-id"
+            - Name: GITHUB_APP_KEY
+              ValueFrom: !Sub "/restyled/${Environment}/github-app-key"
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              "awslogs-group": !Ref ReconcileLogGroup
+              "awslogs-region": !Ref AWS::Region
+              "awslogs-stream-prefix": reconcile
+      Cpu: 256
+      Memory: 512
+      NetworkMode: awsvpc
+      ExecutionRoleArn: !GetAtt AppsTaskExecutionRole.Arn
+      RequiresCompatibilities: [FARGATE]
+
+  ReconcileLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "restyled/${Environment}/reconcile"
+      RetentionInDays: !FindInMap [LogRetentions, !Ref Environment, Apps]
+
+  ReconcileLogGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+        DestinationArn: !GetAtt LogForwarder.Arn
+        LogGroupName: !Ref ReconcileLogGroup
+        FilterPattern: ""
+
+  # ** SyncMarketplace
+  SyncMarketplaceScheduledTask:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: !Sub "SyncMarketplace task for restyled-${Environment}"
+      ScheduleExpression: rate(5 minutes)
+      State: ENABLED
+      Targets:
+        - Id: !Sub "restyled-${Environment}-sync-marketplace"
+          RoleArn: !GetAtt AppsEventsRole.Arn
+          Arn: !GetAtt AppsCluster.Arn
+          EcsParameters:
+            TaskDefinitionArn: !Ref SyncMarketplaceTaskDefinition
+            TaskCount: 1
+            LaunchType: FARGATE
+            NetworkConfiguration:
+              AwsVpcConfiguration:
+                AssignPublicIp: ENABLED
+                SecurityGroups:
+                  - !GetAtt AppsSecurityGroup.GroupId
+                Subnets: !Split
+                  - ","
+                  - Fn::ImportValue: !Sub "${Environment}-SubnetIds"
+
+  SyncMarketplaceTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub "restyled-${Environment}-sync-marketplace"
+      ContainerDefinitions:
+        - Name: main
+          Image: !Ref RestyledImage
+          Command: [/app/restyled.io, sync-marketplace]
+          Environment:
+            - Name: APPROOT
+              Value: !FindInMap [AppsEnv, !Ref Environment, AppRoot]
+            - Name: RESTYLER_IMAGE
+              Value: !Select [0, !Split [":", !Ref RestylerImage]]
+            - Name: RESTYLER_TAG
+              Value: !Select [1, !Split [":", !Ref RestylerImage]]
+          Secrets:
+            - Name: DATABASE_URL
+              ValueFrom: !Sub "/restyled/${Environment}/database-url"
+            - Name: GITHUB_RATE_LIMIT_TOKEN
+              ValueFrom: !Sub "/restyled/${Environment}/github-rate-limit-token"
+            - Name: REDIS_URL
+              ValueFrom: !Sub "/restyled/${Environment}/redis-url"
+            - Name: GITHUB_APP_ID
+              ValueFrom: !Sub "/restyled/${Environment}/github-app-id"
+            - Name: GITHUB_APP_KEY
+              ValueFrom: !Sub "/restyled/${Environment}/github-app-key"
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              "awslogs-group": !Ref SyncMarketplaceLogGroup
+              "awslogs-region": !Ref AWS::Region
+              "awslogs-stream-prefix": sync-marketplace
+      Cpu: 256
+      Memory: 512
+      NetworkMode: awsvpc
+      ExecutionRoleArn: !GetAtt AppsTaskExecutionRole.Arn
+      RequiresCompatibilities: [FARGATE]
+
+  SyncMarketplaceLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "restyled/${Environment}/sync-marketplace"
+      RetentionInDays: !FindInMap [LogRetentions, !Ref Environment, Apps]
+
+  SyncMarketplaceLogGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+        DestinationArn: !GetAtt LogForwarder.Arn
+        LogGroupName: !Ref SyncMarketplaceLogGroup
+        FilterPattern: ""

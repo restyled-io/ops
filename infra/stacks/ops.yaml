@@ -1,0 +1,108 @@
+Parameters:
+  Environment:
+    Type: String
+    Description: |
+      Environment name, e.g. "prod". A Stack using the same Environment is
+      expected to exist and Export values we need.
+    Default: prod
+
+Resources:
+  # TODO: centralize this
+  StoreCloudWatchLogsPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Store CloudWatch Logs
+      PolicyDocument: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Action": [
+              "logs:CreateLogGroup",
+              "logs:CreateLogStream",
+              "logs:PutLogEvents"
+            ],
+            "Resource": [
+              "arn:aws:logs:*:*:*"
+            ]
+          }]
+        }
+      Roles:
+        - !Ref CheckRedisUrlExecutionRole
+
+  CheckRedisUrlPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: !Sub "Parameters access for restyled-${Environment}"
+      PolicyDocument: !Sub |
+          {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Effect": "Allow",
+              "Action": "ssm:*",
+              "Resource": [
+                "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/restyled/${Environment}/redis-url"
+              ]
+            } , {
+              "Effect": "Allow",
+              "Action": "ssm:GetParameter",
+              "Resource": [
+                "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/restyled/${Environment}/heroku-api-key"
+              ]
+            }]
+          }
+      Roles:
+        - !Ref CheckRedisUrlExecutionRole
+
+  CheckRedisUrlExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "edgelambda.amazonaws.com",
+                "lambda.amazonaws.com"
+              ]
+            },
+            "Action": "sts:AssumeRole"
+          }]
+        }
+
+  CheckRedisUrl:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "restyled-${Environment}-check-redis-url"
+      Description: |
+        Check (and fix) redis-url SSM Parameter
+
+      Runtime: nodejs10.x
+      Code:
+        S3Bucket: ops.restyled.io
+        S3Key: check-redis-url.zip
+      Handler: index.handler
+      Environment:
+        Variables:
+          ENV: !Ref Environment
+      Role: !GetAtt CheckRedisUrlExecutionRole.Arn
+
+  CheckRedisUrlRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: CheckRedisUrl every two minutes
+      ScheduleExpression: rate(2 minutes)
+      State: "ENABLED"
+      Targets:
+        - Id: !Sub "restyled-${Environment}-check-redis-url"
+          Arn: !GetAtt CheckRedisUrl.Arn
+
+  CheckRedisUrlPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref CheckRedisUrl
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt CheckRedisUrlRule.Arn

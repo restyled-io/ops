@@ -1,0 +1,9 @@
+#!/bin/sh
+set -x
+
+find /tmp -maxdepth 1 \
+  -type d -name 'restyler-*' \
+  -cmin +$((12 * 60)) \
+  -exec rm -r {} +
+
+docker system prune --all --force

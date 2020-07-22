@@ -1,81 +1,88 @@
 # Restyled Ops
 
-Support image and tooling for the development, deployment, and operation of
-Restyled.
+Tooling for the deployment and operation of Restyled.
 
-## Environment
+## Agent
 
-Environment variables are required to do anything meaningful:
+**Purpose**: Launched on each Restyle Machine via user-data to respond to
+Autoscaling Lifecycle Hooks. Registers to accept Restyler Jobs when launching.
+De-registers and waits for in-flight Jobs before terminating.
 
-```sh
-# shellcheck disable=SC2034
+**Source files**: top-level Haskell package.
 
-# To run anything at all
-AWS_ACCESS_KEY_ID=...
-AWS_SECRET_ACCESS_KEY=...
+**Deployment story**: `make agent.update` builds and pushes `restyled/agent`.
 
-# To interact with Heroku-backed Reds (scale-watch, fix-redis-url)
-HEROKU_EMAIL=...
-HEROKU_API_KEY=...
+## Autoscale
 
-# To perform scaling operations that add/remove Restyle Machines via API
-RESTYLED_API_HOST=...
-RESTYLED_API_TOKEN=...
+**Purpose**: Check current queue depth and number of Restyle Machines in
+service. If needed, scales things up or down.
 
-# For notify (used by scale-watch)
-PUSHOVER_API_KEY=...
-PUSHOVER_USER_KEY=...
-```
+**Source files**: `autoscale/`
 
-## Local
+**Deployment story**: none, for now.
 
-```console
-docker build --tag {tag} .
-docker run --rm --env-file "$PWD"/.env {tag} {command}
-```
+## init-certificates
 
-## `bin/self`
+**Purpose**: wrap non-interactive `openssl` commands to produce TLS certificates
+for securing a Docker server. Run on new Restyle Machine instances through
+user-data.
 
-This script manages running a persistent ops container to handle automatic
-scaling based on our main queue depth. The script creates the EC2 instance if
-necessary and supports the following sub-commands:
+**Source files**: `init-certificates/`
 
-```console
-bin/self start
-```
+**Deployment story**: `make build test release` in source directory.
 
-Starts the scale-watch container.
+## check-redis-url
 
-```console
-bin/self start
-```
+**Purpose**: Checks if our Heroku Add-on has changed its `REDIS_URL`, and
+updates our SSM Parameter accordingly.
 
-Stops the scale-watch container.
+**Source files**: `check-redis-url/`
 
-```console
-bin/self tail
-```
+**Deployment story**: none, for now.
 
-Tails the scale-watch container.
+## logdna-cloudwatch
 
-```console
-bin/self exec {command}
-```
+**Purpose**: Forwards CloudWatch logs to LogDNA. Simplified and improved version
+of their official one.
 
-Runs a command in the scale-watch container.
+**Source files**: `logdna-cloudwatch/`
 
-## FAQ
+**Deployment story**: `yarn run dist && yarn run s3.cp` builds and copies a zip
+file to S3, which is expected by the `services` CloudFormation Stack.
 
-**Why `exec` and not `run`?** Well, because we currently push/pull our Docker
-Machine state from S3 during startup/shutdown (see `entrypoint.sh`). We do this
-naively such that concurrent access doesn't work. So, as much as possible, we
-try to push for executing commands in the (only) running container, instead of
-launching new ones that would operate on stale state.
+## Infra Stacks
 
-**Why does `exec docker-machine ssh` not work?** Sometimes it does, but because
-we push/pull Docker Machine state naively, we don't correctly preserve
-permissions of the SSH keys. If you are attempting to SSH into an instance that
-was created by a different ops container, it won't work.
+**Purpose**: CloudFormation Stack definitions for Restyled infrastructure. All
+Stacks accept an `Environment` parameter for scoping resources. SSM Parameters
+under `/restyled/${Environment}/` are the only external infrastructure that is
+expected to exist.
+
+- `vpc`: core networking; a VPC and Subnets across 3 AZs
+- `services`: ECS Cluster and Services
+
+  1. `Webhooks`: Service for processing Webhook messages and launching Restyler
+     jobs
+  1. `Health`: Scheduled Task to collect and log information
+  1. `Reconcile`: Scheduled Task to reconcile Job metadata after a deployment
+     may have sent them out of sync
+  1. `SyncMarketplace`: Scheduled Task to sync GitHub Marketplace subscriptions
+
+  This Stack also includes `logdna-cloudwatch`.
+
+- `machines`: Autoscaling Group of Docker-enabled "Restyle Machines", which
+  self-register to accept Restyler Jobs (by running an Agent).
+
+**Source files**: `infra/stacks/`
+
+**Deployment story**: `make {stack}.update`, `make stack.*`, etc
+
+## TODO
+
+- Bring back prune script on Restyle Machines
+- Make autoscale a Lambda in ops stack
+- Centralize generic IAM Policy resources in their own Stack?
+- Should `agent/` and `init-certificates/` be their own repositories?
+  - And get CI/CD
 
 ---
 

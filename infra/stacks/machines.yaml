@@ -1,0 +1,288 @@
+Parameters:
+  Environment:
+    Type: String
+    Description: |
+      Environment name, e.g. "prod". A Stack using the same Environment is
+      expected to exist and Export values we need.
+    Default: prod
+
+  InstanceAmi:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id
+
+  InstanceKeyPair:
+    Type: String
+    Default: patrick@leo
+
+  RestyledHost:
+    Type: String
+    Default: https://restyled.io
+
+  DesiredCapacity:
+    Type: Number
+    Default: 1
+
+Resources:
+  # TODO: centralize this
+  StoreCloudWatchLogsPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Store CloudWatch Logs
+      PolicyDocument: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            }
+          ]
+        }
+      Roles:
+        - !Ref AutoScalingInstanceRole
+
+  # TODO: centralize this
+  GetSSMParameterPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: !Sub "Read SSM Parameters for restyled-${Environment}"
+      PolicyDocument: !Sub |
+          {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "ssm:GetParameters",
+                  "ssm:GetParameter"
+                ],
+                "Resource": [
+                  "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/restyled/${Environment}/*"
+                ]
+              }
+            ]
+          }
+      Roles:
+        - !Ref AutoScalingInstanceRole
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub "${Environment}-machines Security Group"
+      VpcId:
+        Fn::ImportValue: !Sub "${Environment}-VPCId"
+      SecurityGroupIngress:
+        - SourceSecurityGroupId:
+            Fn::ImportValue: !Sub "${Environment}-AppsSecurityGroupId"
+          IpProtocol: tcp
+          FromPort: 2376
+          ToPort: 2376
+
+        # Needed while the Heroku app is reading docker-ps
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 2376
+          ToPort: 2376
+
+        # Needed while working on initial instance setup
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "restyled/${Environment}/machines"
+      RetentionInDays: 7
+
+  AutoScalingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument: |
+        {
+          "Version": "2008-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "autoscaling.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        }
+
+  AutoScalingInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument: |
+        {
+          "Version": "2008-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        }
+
+  AutoScalingInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref AutoScalingInstanceRole
+
+  LaunchConfiguration:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !Ref InstanceAmi
+      IamInstanceProfile: !Ref AutoScalingInstanceProfile
+      KeyName: !Ref InstanceKeyPair
+      AssociatePublicIpAddress: true
+      SecurityGroups:
+        - !Ref SecurityGroup
+      InstanceMonitoring: true
+      InstanceType: t2.micro
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+          set -eu
+
+          echo "Installing tooling required for setup"
+          sudo yum install -y awscli jq
+
+          echo "Getting EC2 Metadata"
+          TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+          host=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/public-hostname)
+          instance_id=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
+
+          echo "Generating TLS certificates"
+          mkdir -p certs
+          docker run --rm \
+            --volume "$PWD"/certs:/certs \
+            restyled/init-certificates -H "$host" -o /certs
+
+          echo "Reconfiguring Docker daemon TLS"
+          sudo mkdir -p /etc/docker/ssl
+          sudo cp certs/{ca,server_cert,server_key}.pem /etc/docker/ssl/
+          options="--tlsverify"
+          options="$options --tlscacert=/etc/docker/ssl/ca.pem"
+          options="$options --tlscert=/etc/docker/ssl/server_cert.pem"
+          options="$options --tlskey=/etc/docker/ssl/server_key.pem"
+          options="$options -H tcp://0.0.0.0:2376"
+          sudo sed -i 's%^\(OPTIONS="[^"]*\)"$%\1 '"$options"'"%' /etc/sysconfig/docker
+          sudo systemctl restart docker
+
+          echo "Testing Docker connection"
+          mkdir -p client-certs
+          sudo cp /certs/ca.pem client-certs/ca.pem
+          sudo cp /certs/client_cert.pem client-certs/cert.pem
+          sudo cp /certs/client_key.pem client-certs/key.pem
+          sudo chown -R ec2-user:ec2-user client-certs/
+          env \
+            DOCKER_TLS_VERIFY=1 \
+            DOCKER_HOST=tcp://$host:2376 \
+            DOCKER_CERT_PATH="$PWD/client-certs" \
+            docker version
+
+          echo "Starting build agent"
+          restyled_token=$(aws --region "${AWS::Region}" ssm get-parameter --name /restyled/${Environment}/restyled-api-token | jq --raw-output '.Parameter.Value')
+
+          if [ -z "$restyled_token" ]; then
+            echo "Unable to retrieve Restyled API Token from SSM"
+            exit 1
+          fi
+
+          docker run --detach --name restyled-agent \
+            --log-driver=awslogs \
+            --log-opt awslogs-region=${AWS::Region} \
+            --log-opt awslogs-group=${LogGroup} \
+            --volume "$PWD"/client-certs:/certs \
+            --volume /var/run/docker.sock:/var/run/docker.sock \
+            restyled/agent \
+              --host "$host" \
+              --instance "$instance_id" \
+              --restyled-host "${RestyledHost}" \
+              --restyled-token "$restyled_token" \
+              --env "${Environment}" \
+              --sqs-queue-url "${LifecycleHooksQueue}"
+
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+        LaunchConfigurationName: !Ref LaunchConfiguration
+        VPCZoneIdentifier: !Split
+          - ","
+          - Fn::ImportValue: !Sub "${Environment}-SubnetIds"
+        MinSize: 1
+        MaxSize: 4
+        DesiredCapacity: !Ref DesiredCapacity
+        LifecycleHookSpecificationList:
+          - LifecycleHookName: !Sub "restyled-machine-${Environment}-launching"
+            LifecycleTransition: autoscaling:EC2_INSTANCE_LAUNCHING
+            NotificationTargetARN: !GetAtt LifecycleHooksQueue.Arn
+            RoleARN: !GetAtt AutoScalingRole.Arn
+          - LifecycleHookName: !Sub "restyled-machine-${Environment}-terminating"
+            LifecycleTransition: autoscaling:EC2_INSTANCE_TERMINATING
+            NotificationTargetARN: !GetAtt LifecycleHooksQueue.Arn
+            RoleARN: !GetAtt AutoScalingRole.Arn
+
+  LifecycleHooksQueue:
+    Type: AWS::SQS::Queue
+    Properties: {}
+
+  LifecycleHooksPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Full access to LifecycleHooks Queue
+      PolicyDocument: !Sub |
+        {
+           "Version": "2012-10-17",
+           "Statement": [{
+              "Effect": "Allow",
+              "Action": [
+                "sns:Publish",
+                "sqs:*"
+              ],
+              "Resource": "${LifecycleHooksQueue.Arn}"
+           }]
+        }
+      Roles:
+        - !Ref AutoScalingRole
+        - !Ref AutoScalingInstanceRole
+
+  LifecycleActionsPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Completing ASG Lifecycle actions
+      PolicyDocument: |
+        {
+           "Version": "2012-10-17",
+           "Statement": [{
+              "Effect": "Allow",
+              "Action": "autoscaling:CompleteLifecycleAction",
+              "Resource": "*"
+           }]
+        }
+      Roles:
+        - !Ref AutoScalingInstanceRole

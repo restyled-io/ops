@@ -1,59 +1,47 @@
-FROM node:10.12.0-alpine
+FROM fpco/stack-build-small:lts-14.6 AS builder
 LABEL maintainer="Pat Brisbin <pbrisbin@gmail.com>"
-
-ENV LANG en_US.UTF-8
-RUN apk add --update --no-cache \
-  autoconf=2.69-r2 \
-  automake=1.16.1-r0 \
-  bash=4.4.19-r1 \
-  curl=7.61.1-r3 \
-  g++=6.4.0-r9 \
-  gcc=6.4.0-r9 \
-  git=2.18.4-r0 \
-  make=4.2.1-r2 \
-  openssh-client=7.7_p1-r4 \
-  py-pip=10.0.1-r0
-
-# Compilations
-ENV JO_VERSION 1.3
-# hadolint ignore=DL3003
+ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 LC_ALL=C.UTF-8
 RUN \
-  cd /tmp && \
-  curl -L -O https://github.com/jpmens/jo/releases/download/$JO_VERSION/jo-$JO_VERSION.tar.gz && \
-  tar xzf "jo-$JO_VERSION.tar.gz" && \
-  ( cd "jo-$JO_VERSION" && \
-    autoreconf -i && \
-    ./configure && \
-    make check && \
-    make install \
-  ) && \
-  rm -rf "/tmp/jo-$JO_VERSION"
+  apt-get update && \
+  apt-get install -y --no-install-recommends \
+    ca-certificates=20190110~18.04.1 \
+    curl=7.58.0-2ubuntu3.9 \
+    gcc=4:7.4.0-1ubuntu2.3 \
+    locales=2.27-3ubuntu1.2 \
+    netbase=5.4 && \
+  locale-gen en_US.UTF-8 && \
+  rm -rf /var/lib/apt/lists/*
+RUN mkdir -p /src
+WORKDIR /src
 
-# Package installs
-RUN pip install --upgrade pip==20.2b1
-ENV ECS_DEPLOY_VERSION 1.10.1
-RUN pip install ecs-deploy==$ECS_DEPLOY_VERSION
-ENV AWSCLI_VERSION 1.18.85
-RUN pip install awscli==$AWSCLI_VERSION
-ENV HEROKU_VERSION 7.35.0
-# https://stackoverflow.com/questions/52196518/could-not-get-uid-gid-when-building-node-docker
-RUN npm config set unsafe-perm true
-RUN npm install -g heroku@$HEROKU_VERSION
+COPY stack.yaml package.yaml /src/
+RUN stack install --dependencies-only
+COPY src /src/src
+COPY agent /src/agent
+# Needed even though we're not building it
+COPY autoscale /src/autoscale
+RUN stack install ops:agent
 
-# Binaries
-ENV JQ_VERSION 1.6
+# Docker client
+ENV DOCKER_ARCHIVE docker-17.03.1-ce.tgz
+ENV DOCKER_SRC_URL https://get.docker.com/builds/Linux/x86_64/$DOCKER_ARCHIVE
 RUN \
-  curl -L -o /usr/local/bin/jq https://github.com/stedolan/jq/releases/download/jq-$JQ_VERSION/jq-linux64 && \
-  chmod +x /usr/local/bin/jq
-ENV DOCKER_VERSION 19.03.3
-RUN \
-  curl -fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-$DOCKER_VERSION.tgz && \
-  tar --strip-components=1 -xvzf "docker-$DOCKER_VERSION.tgz" -C /usr/local/bin
-ENV DOCKER_MACHINE_VERSION v0.16.0
-RUN \
-  curl -L -o /usr/local/bin/docker-machine https://github.com/docker/machine/releases/download/$DOCKER_MACHINE_VERSION/docker-machine-Linux-x86_64 && \
-  chmod +x /usr/local/bin/docker-machine
+  curl -fsSLO "$DOCKER_SRC_URL" && \
+  tar --strip-components=1 -xvzf "$DOCKER_ARCHIVE" -C /usr/local/bin
 
-COPY files /
-COPY entrypoint.sh /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
+FROM ubuntu:18.04
+LABEL maintainer="Pat Brisbin <pbrisbin@gmail.com>"
+ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 LC_ALL=C.UTF-8
+RUN \
+  apt-get update && \
+  apt-get install -y --no-install-recommends \
+    ca-certificates=20190110~18.04.1 \
+    locales=2.27-3ubuntu1.2 \
+    netbase=5.4 && \
+  locale-gen en_US.UTF-8 && \
+  rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /root/.local/bin/agent /bin/agent
+COPY --from=builder /usr/local/bin/docker /usr/local/bin/docker
+ENTRYPOINT ["/bin/agent"]
+CMD ["--help"]

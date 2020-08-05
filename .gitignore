@@ -1,3 +1,14 @@
+*.log
+.env*
+dist
+
+# Haskell
 *.cabal
-.env
 .stack-work
+
+# JavaScript Lambdas
+node_modules
+
+# Python Lambdas
+.venv
+__pycache__

@@ -1,7 +1,14 @@
-.env*
 .git
+
+# Copy .gitignore
+*.log
+.env*
+
+# Haskell
+*.cabal
 .stack-work
 
+# Sub-apps
 autoscale/
 check-redis-url/
 infra/

@@ -39,7 +39,7 @@ updates our SSM Parameter accordingly.
 **Source files**: `check-redis-url/`
 
 **Deployment story**: `yarn run dist && yarn run s3.cp` builds and copies a zip
-file to S3, which is expected by the `services` CloudFormation Stack. `yarn run
+file to S3, which is expected by the `machines` CloudFormation Stack. `yarn run
 deploy` can be used to update the Function directly.
 
 ## logdna-cloudwatch

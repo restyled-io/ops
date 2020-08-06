@@ -195,8 +195,10 @@ Resources:
           - ","
           - Fn::ImportValue: !Sub "${Environment}-SubnetIds"
         MinSize: 1
-        MaxSize: 4
+        MaxSize: 8
         DesiredCapacity: !Ref DesiredCapacity
+        MetricsCollection:
+          - Granularity: 1Minute
         LifecycleHookSpecificationList:
           - LifecycleHookName: !Sub "restyled-machine-${Environment}-launching"
             LifecycleTransition: autoscaling:EC2_INSTANCE_LAUNCHING

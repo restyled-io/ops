@@ -4,10 +4,6 @@ ENV ?= prod
 setup:
 	source .venv/bin/activate && pip install -r requirements.txt
 
-.PHONY: run
-run:
-	source .venv/bin/activate && ENV=$(ENV) python main.py
-
 # Build dist/lambda.zip
 .PHONY: dist
 dist:

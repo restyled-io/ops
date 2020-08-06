@@ -1,81 +1,98 @@
 import boto3
+import dotenv
+import json
+import os
 import requests
 import time
-import os
-import json
-import dotenv
 
-if __name__ == '__main__':
-    dotenv.load_dotenv()
-
-ssm = boto3.client('ssm')
-cf = boto3.client('cloudformation')
+dotenv.load_dotenv()
 
 ENV = os.environ.get('ENV', 'prod')
-SERVICES_STACK = "%s-services" % ENV
-MACHINES_STACK = "%s-machines" % ENV
 
+STACK_NAMES = {
+    'webhooks': '%s-services' % ENV,
+    'machines': '%s-machines' % ENV
+}
+
+STACK_PARAMS = {
+    'webhooks': 'AppsWebhooksDesiredCount',
+    'machines': 'DesiredCapacity'
+}
+
+cf = boto3.client('cloudformation')
+ssm = boto3.client('ssm')
 api_token_parameter_name = "/restyled/%s/restyled-api-token" % ENV
 api_token_parameter = ssm.get_parameter(Name=api_token_parameter_name)
 RESTYLED_API_HOST = os.environ.get('RESTYLED_API_HOST', 'https://restyled.io')
 RESTYLED_API_TOKEN = api_token_parameter['Parameter']['Value']
 
+RESTYLED_API_URL = "%s%s" % (RESTYLED_API_HOST, '/admin/machines/state')
+RESTYLED_API_HEADERS = {
+    'Accept': 'application/json',
+    'Content-type': 'application/json',
+    'Authorization': "token %s" % RESTYLED_API_TOKEN
+}
+
 
 def handler(_event, _context):
+    ok = True
+    events = []
+
+    def append_event(x):
+        if x:
+            events.append(x)
+
     try:
-        machines_state = get_machines_state()
-        return scale(machines_state['depth'], machines_state['machines'])
+        resp = requests.get(RESTYLED_API_URL, headers=RESTYLED_API_HEADERS)
+        depth = resp.json()['queueDepth']
+        append_event({'depth': depth, 'high': depth > 30, 'low': depth < 1})
+
+        if depth > 30:
+            append_event(scale('webhooks', 8))
+            append_event(scale('machines', 4))
+
+        if depth < 1:
+            append_event(scale('webhooks', 2))
+            append_event(scale('machines', 1))
+
     except Exception as err:
-        return {'ok': False, 'error': err}
+        ok = False
+        append_event({'error': err})
+
+    return {'ok': ok, 'events': events}
 
 
-def scale(depth, machines):
-    def result_ok(x): return {'ok': True, 'result': x,
-                              'depth': depth, 'machines': machines}
+def scale(service, desired):
+    stack_name = STACK_NAMES[service]
+    param = STACK_PARAMS[service]
+    current = int(get_stack_parameter(stack_name, param))
 
-    if depth > 40 and machines < 4:
-        update_stack_parameter(MACHINES_STACK, 'DesiredCapacity', 4)
-        update_stack_parameter(SERVICES_STACK, 'AppsWebhooksDesiredCount', 8)
-        return result_ok('ScaledUp')
+    if current != desired:
+        update_stack_parameter(stack_name, param, str(desired))
+        return {'update': "%s[%s] %d => %d" % (stack_name, param, current, desired)}
 
-    if depth < 10 and machines > 1:
-        update_stack_parameter(SERVICES_STACK, 'AppsWebhooksDesiredCount', 2)
-        update_stack_parameter(MACHINES_STACK, 'DesiredCapacity', 1)
-        return result_ok('ScaledDown')
-
-    return result_ok('NoChange')
+    return None
 
 
-def get_machines_state():
-    url = "%s%s" % (RESTYLED_API_HOST, '/admin/machines/state')
-    headers = {
-        'Accept': 'application/json',
-        'Content-type': 'application/json',
-        'Authorization': "token %s" % RESTYLED_API_TOKEN
-    }
-    body = requests.get(url, headers=headers).json()
+def get_stack_parameter(stack_name, key):
+    stacks = cf.describe_stacks(StackName=stack_name)['Stacks']
 
-    return {
-        'depth': body['queueDepth'],
-        'machines': len(body['jobCounts'])
-    }
+    if len(stacks) == 0:
+        raise Exception("Stack %s not found" % stack_name)
+
+    parameters = stacks[0]['Parameters']
+    parameter = next(p for p in parameters if p['ParameterKey'] == key)
+
+    if not parameter:
+        raise Exception("%s is not a Parameter in %s" % (key, stack_name))
+
+    return parameter['ParameterValue']
 
 
 def update_stack_parameter(stack_name, key, value):
-    print("Updating %s Stack's Parameter: %s to %s" % (stack_name, key, value))
+    parameter = [{'ParameterKey': key, 'ParameterValue': value}]
+    capabilities = ['CAPABILITY_NAMED_IAM']
     cf.update_stack(StackName=stack_name,
                     UsePreviousTemplate=True,
-                    Parameters=[
-                        {'ParameterKey': str(key),
-                         'ParameterValue': str(value)
-                         }
-                    ],
-                    Capabilities='CAPABILITY_NAMED_IAM')
-    waiter = client.get_waiter('stack_update_complete')
-    waiter.wait(StackName=stack_name)
-
-
-if __name__ == '__main__':
-    while True:
-        print(handler(None, None))
-        time.sleep(30)
+                    Parameters=parameters,
+                    Capabilities=capabilities)

@@ -22,6 +22,14 @@ Parameters:
     Type: Number
     Default: 1
 
+  UserDataVersion:
+    Type: String
+    Default: 1.0.2
+
+  AgentVersion:
+    Type: String
+    Default: 1.0.0
+
 Resources:
   # TODO: centralize this
   StoreCloudWatchLogsPolicy:
@@ -171,61 +179,19 @@ Resources:
           echo "Installing tooling required for setup"
           sudo yum install -y awscli jq
 
-          echo "Getting EC2 Metadata"
-          TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
-          host=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/public-hostname)
-          instance_id=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
+          echo "Pulling machines-${Environment} user-data"
+          aws s3 cp "s3://ops.restyled.io/machines/${Environment}/user-data-v${UserDataVersion}" ./user-data
+          chmod +x ./user-data
 
-          echo "Generating TLS certificates"
-          mkdir -p certs
-          docker run --rm \
-            --volume "$PWD"/certs:/certs \
-            restyled/init-certificates -H "$host" -o /certs
-
-          echo "Reconfiguring Docker daemon TLS"
-          sudo mkdir -p /etc/docker/ssl
-          sudo cp certs/{ca,server_cert,server_key}.pem /etc/docker/ssl/
-          options="--tlsverify"
-          options="$options --tlscacert=/etc/docker/ssl/ca.pem"
-          options="$options --tlscert=/etc/docker/ssl/server_cert.pem"
-          options="$options --tlskey=/etc/docker/ssl/server_key.pem"
-          options="$options -H tcp://0.0.0.0:2376"
-          sudo sed -i 's%^\(OPTIONS="[^"]*\)"$%\1 '"$options"'"%' /etc/sysconfig/docker
-          sudo systemctl restart docker
-
-          echo "Testing Docker connection"
-          mkdir -p client-certs
-          sudo cp /certs/ca.pem client-certs/ca.pem
-          sudo cp /certs/client_cert.pem client-certs/cert.pem
-          sudo cp /certs/client_key.pem client-certs/key.pem
-          sudo chown -R ec2-user:ec2-user client-certs/
+          echo "Executing user-data"
           env \
-            DOCKER_TLS_VERIFY=1 \
-            DOCKER_HOST=tcp://$host:2376 \
-            DOCKER_CERT_PATH="$PWD/client-certs" \
-            docker version
-
-          echo "Starting build agent"
-          restyled_token=$(aws --region "${AWS::Region}" ssm get-parameter --name /restyled/${Environment}/restyled-api-token | jq --raw-output '.Parameter.Value')
-
-          if [ -z "$restyled_token" ]; then
-            echo "Unable to retrieve Restyled API Token from SSM"
-            exit 1
-          fi
-
-          docker run --detach --name restyled-agent \
-            --log-driver=awslogs \
-            --log-opt awslogs-region=${AWS::Region} \
-            --log-opt awslogs-group=${LogGroup} \
-            --volume "$PWD"/client-certs:/certs \
-            --volume /var/run/docker.sock:/var/run/docker.sock \
-            restyled/agent \
-              --host "$host" \
-              --instance "$instance_id" \
-              --restyled-host "${RestyledHost}" \
-              --restyled-token "$restyled_token" \
-              --env "${Environment}" \
-              --sqs-queue-url "${LifecycleHooksQueue}"
+            "AGENT_VERSION=${AgentVersion}" \
+            "ENV=${Environment}" \
+            "LIFECYCLE_HOOKS_URL=${LifecycleHooksQueue}" \
+            "LOG_GROUP=${LogGroup}" \
+            "REGION=${AWS::Region}" \
+            "RESTYLED_API_HOST=${RestyledHost}" \
+            ./user-data
 
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup

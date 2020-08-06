@@ -50,7 +50,19 @@ stack.delete:
 	$(AWS) cloudformation wait stack-delete-complete \
 	  --stack-name "$(ENV)-$(STACK)"
 
+AGENT_VERSION ?=
+
 .PHONY: agent.update
 agent.update:
-	docker build --tag restyled/agent .
-	docker push restyled/agent
+	[ -n "$(AGENT_VERSION)" ]
+	docker build --tag restyled/agent:v$(AGENT_VERSION) .
+	docker push restyled/agent:v$(AGENT_VERSION)
+
+USER_DATA_VERSION ?=
+
+.PHONY: files.update
+files.update:
+	[ -n "$(USER_DATA_VERSION)" ]
+	$(AWS) s3 cp --acl public-read \
+	  infra/files/machines/user-data \
+	  s3://ops.restyled.io/machines/$(ENV)/user-data-v$(USER_DATA_VERSION)

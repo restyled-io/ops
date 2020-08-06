@@ -18,9 +18,7 @@ COPY stack.yaml package.yaml /src/
 RUN stack install --dependencies-only
 COPY src /src/src
 COPY agent /src/agent
-# Needed even though we're not building it
-COPY autoscale /src/autoscale
-RUN stack install ops:agent
+RUN stack install
 
 # Docker client
 ENV DOCKER_ARCHIVE docker-17.03.1-ce.tgz

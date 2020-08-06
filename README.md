@@ -81,7 +81,6 @@ expected to exist.
 
 ## TODO
 
-- Bring back prune script on Restyle Machines
 - Make autoscale a Lambda in ops stack
 - Centralize generic IAM Policy resources in their own Stack?
 - Should `agent/` and `init-certificates/` be their own repositories?

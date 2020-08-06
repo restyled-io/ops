@@ -42,6 +42,16 @@ updates our SSM Parameter accordingly.
 file to S3, which is expected by the `machines` CloudFormation Stack. `yarn run
 deploy` can be used to update the Function directly.
 
+## record-metrics
+
+**Purpose**: Records Queue Depth to CloudWatch every minute.
+
+**Source files**: `record-metrics/`
+
+**Deployment story**: `make s3.cp` builds and copies a zip file to S3, which is
+expected by the `machines` CloudFormation Stack. `make deploy` can be used to
+update the Function directly.
+
 ## logdna-cloudwatch
 
 **Purpose**: Forwards CloudWatch logs to LogDNA. Simplified and improved version

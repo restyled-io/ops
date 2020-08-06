@@ -7,6 +7,24 @@ Parameters:
     Default: prod
 
 Resources:
+  GetRestyledApiKeyPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: !Sub "Access Parameter restyled/${Environment}/restyled-api-token"
+      PolicyDocument: !Sub |
+          {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Effect": "Allow",
+              "Action": "ssm:GetParameter",
+              "Resource": [
+                "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/restyled/${Environment}/restyled-api-token"
+              ]
+            }]
+          }
+      Roles:
+        - !Ref RecordMetricsExecutionRole
+
   # TODO: centralize this
   StoreCloudWatchLogsPolicy:
     Type: AWS::IAM::ManagedPolicy
@@ -29,6 +47,27 @@ Resources:
         }
       Roles:
         - !Ref CheckRedisUrlExecutionRole
+        - !Ref RecordMetricsExecutionRole
+
+  CloudWatchMetricsPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Full access to CloudWatch Metrics
+      PolicyDocument: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Action": [
+              "cloudwatch:ListMetrics",
+              "cloudwatch:GetMetric*",
+              "cloudwatch:PutMetric*"
+            ],
+            "Resource": "*"
+          }]
+        }
+      Roles:
+        - !Ref RecordMetricsExecutionRole
 
   # Dedicate policy for reading and writing what this Lambda needs specifically
   CheckRedisUrlPolicy:
@@ -108,3 +147,57 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: events.amazonaws.com
       SourceArn: !GetAtt CheckRedisUrlRule.Arn
+
+  RecordMetricsExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "edgelambda.amazonaws.com",
+                "lambda.amazonaws.com"
+              ]
+            },
+            "Action": "sts:AssumeRole"
+          }]
+        }
+
+  RecordMetrics:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "restyled-${Environment}-record-metrics"
+      Description: |
+        Record metrics to CloudWatch every minute
+
+      Runtime: python3.8
+      Code:
+        S3Bucket: ops.restyled.io
+        S3Key: record-metrics.zip
+      Handler: main.handler
+      Timeout: 30
+      Environment:
+        Variables:
+          ENV: !Ref Environment
+      Role: !GetAtt RecordMetricsExecutionRole.Arn
+
+  RecordMetricsRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Record metrics every two minutes
+      ScheduleExpression: rate(1 minute)
+      State: "ENABLED"
+      Targets:
+        - Id: !Sub "restyled-${Environment}-record-metrics"
+          Arn: !GetAtt RecordMetrics.Arn
+
+  RecordMetricsPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RecordMetrics
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt RecordMetricsRule.Arn

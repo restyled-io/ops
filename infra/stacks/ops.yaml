@@ -30,10 +30,11 @@ Resources:
       Roles:
         - !Ref CheckRedisUrlExecutionRole
 
+  # Dedicate policy for reading and writing what this Lambda needs specifically
   CheckRedisUrlPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
-      Description: !Sub "Parameters access for restyled-${Environment}"
+      Description: !Sub "Parameters access for restyled-${Environment}-check-redis-url"
       PolicyDocument: !Sub |
           {
             "Version": "2012-10-17",
@@ -84,6 +85,7 @@ Resources:
         S3Bucket: ops.restyled.io
         S3Key: check-redis-url.zip
       Handler: index.handler
+      Timeout: 30
       Environment:
         Variables:
           ENV: !Ref Environment

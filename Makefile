@@ -1,35 +1,6 @@
 AWS ?= aws --profile restyled
 ENV ?= prod
 
-# required for stack.*
-STACK ?=
-
-# required for stack.update-parameter
-PARAMETER_KEY ?=
-PARAMETER_VALUE ?=
-
-.PHONY: scale.up
-scale.up:
-	$(MAKE) stack.update-parameters \
-	  STACK=machines \
-	  PARAMETER_KEY=DesiredCapacity \
-	  PARAMETER_VALUE=4
-	$(MAKE) stack.update-parameters \
-	  STACK=services \
-	  PARAMETER_KEY=AppsWebhooksDesiredCount \
-	  PARAMETER_VALUE=8
-
-.PHONY: scale.down
-scale.down:
-	$(MAKE) stack.update-parameters \
-	  STACK=services \
-	  PARAMETER_KEY=AppsWebhooksDesiredCount \
-	  PARAMETER_VALUE=2
-	$(MAKE) stack.update-parameters \
-	  STACK=machines \
-	  PARAMETER_KEY=DesiredCapacity \
-	  PARAMETER_VALUE=1
-
 .PHONY: machines.update
 machines.update: STACK=machines
 machines.update: stack.update
@@ -37,6 +8,8 @@ machines.update: stack.update
 .PHONY: services.update
 services.update: STACK=services
 services.update: stack.update
+
+STACK ?=
 
 .PHONY: stack.create
 stack.create:
@@ -56,6 +29,9 @@ stack.update:
 	  --capabilities CAPABILITY_NAMED_IAM
 	$(AWS) cloudformation wait stack-update-complete \
 	  --stack-name "$(ENV)-$(STACK)"
+
+PARAMETER_KEY ?=
+PARAMETER_VALUE ?=
 
 .PHONY: stack.update-parameters
 stack.update-parameters:

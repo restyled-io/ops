@@ -4,17 +4,15 @@ Parameters:
     Description: |
       Environment name, e.g. "prod". A Stack using the same Environment is
       expected to exist and Export values we need.
-    Default: prod
 
   RestyledImage:
     Type: String
-    Default: restyled/restyled.io:be883237c2
+
   RestylerImage:
     Type: String
-    Default: restyled/restyler:c613407996
+
   AppsWebhooksDesiredCount:
     Type: Number
-    Default: 2
 
 Outputs:
   AppsSecurityGroupId:

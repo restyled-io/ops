@@ -4,7 +4,6 @@ Parameters:
     Description: |
       Environment name, e.g. "prod". A Stack using the same Environment is
       expected to exist and Export values we need.
-    Default: prod
 
   InstanceAmi:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
@@ -12,23 +11,18 @@ Parameters:
 
   InstanceKeyPair:
     Type: String
-    Default: patrick@leo
 
   RestyledHost:
     Type: String
-    Default: https://restyled.io
 
   DesiredCapacity:
     Type: Number
-    Default: 1
 
   UserDataVersion:
     Type: String
-    Default: 1.0.2
 
   AgentVersion:
     Type: String
-    Default: 1.0.0
 
 Resources:
   # TODO: centralize this

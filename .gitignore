@@ -1,14 +1,6 @@
 *.log
 .env*
-dist
-
-# Haskell
-*.cabal
-.stack-work
-
-# JavaScript Lambdas
-node_modules
-
-# Python Lambdas
 .venv
 __pycache__
+dist
+node_modules

@@ -1,14 +1,6 @@
 AWS ?= aws --profile restyled
 ENV ?= prod
 
-AGENT_VERSION ?=
-
-.PHONY: agent.update
-agent.update:
-	[ -n "$(AGENT_VERSION)" ]
-	docker build --tag restyled/agent:v$(AGENT_VERSION) .
-	docker push restyled/agent:v$(AGENT_VERSION)
-
 .PHONY: infra.stacks.services.update
 infra.stacks.services.update:
 	$(AWS) cloudformation update-stack \

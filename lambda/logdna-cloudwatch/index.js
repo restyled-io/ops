@@ -15,7 +15,7 @@ const ssmGetParameterValue = async (name) => {
   });
 };
 
-const ENV = process.env.ENV || "development";
+const ENV = process.env.ENV || "dev";
 
 const prepareLogs = (event) => {
   const eventData = JSON.parse(

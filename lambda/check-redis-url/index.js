@@ -1,7 +1,7 @@
 const AWS = require("aws-sdk");
 const Heroku = require("heroku-client");
 
-const ENV = process.env.ENV;
+const ENV = process.env.ENV || "dev";
 const HEROKU_API_KEY = `/restyled/${ENV}/heroku-api-key`;
 const REDIS_URL_KEY = `/restyled/${ENV}/redis-url`;
 

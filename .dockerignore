@@ -9,8 +9,8 @@
 .stack-work
 
 # Sub-apps
-autoscale/
 check-redis-url/
 infra/
 init-certificates/
 logdna-cloudwatch/
+record-metrics/

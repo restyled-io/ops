@@ -12,15 +12,6 @@ De-registers and waits for in-flight Jobs before terminating.
 
 **Deployment story**: `make agent.update` builds and pushes `restyled/agent`.
 
-## Autoscale
-
-**Purpose**: Check current queue depth and number of Restyle Machines in
-service. If needed, scales things up or down.
-
-**Source files**: `autoscale/`
-
-**Deployment story**: none, for now.
-
 ## init-certificates
 
 **Purpose**: wrap non-interactive `openssl` commands to produce TLS certificates
@@ -91,7 +82,7 @@ expected to exist.
 
 ## TODO
 
-- Make autoscale a Lambda in ops stack
+- Define EC2/ECS AutoScale policies in CF
 - Centralize generic IAM Policy resources in their own Stack?
 - Should `agent/` and `init-certificates/` be their own repositories?
   - And get CI/CD

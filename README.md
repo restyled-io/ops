@@ -12,16 +12,6 @@ De-registers and waits for in-flight Jobs before terminating.
 
 **Deployment story**: `make agent.update` builds and pushes `restyled/agent`.
 
-## init-certificates
-
-**Purpose**: wrap non-interactive `openssl` commands to produce TLS certificates
-for securing a Docker server. Run on new Restyle Machine instances through
-user-data.
-
-**Source files**: `init-certificates/`
-
-**Deployment story**: `make build test release` in source directory.
-
 ## check-redis-url
 
 **Purpose**: Checks if our Heroku Add-on has changed its `REDIS_URL`, and
@@ -84,8 +74,7 @@ expected to exist.
 
 - Define EC2/ECS AutoScale policies in CF
 - Centralize generic IAM Policy resources in their own Stack?
-- Should `agent/` and `init-certificates/` be their own repositories?
-  - And get CI/CD
+- Should `agent/` be its own repository?
 
 ---
 

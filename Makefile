@@ -31,6 +31,17 @@ infra.stacks.machines.update:
 	$(AWS) cloudformation wait stack-update-complete \
 	  --stack-name "$(ENV)-machines"
 
+.PHONY: infra.stacks.ops.update
+infra.stacks.ops.update:
+	$(AWS) cloudformation update-stack \
+	  --stack-name "$(ENV)-ops" \
+	  --template-body "$$(cat "infra/stacks/ops.yaml")" \
+	  --parameters \
+	    ParameterKey=Environment,UsePreviousValue=true \
+	  --capabilities CAPABILITY_NAMED_IAM
+	$(AWS) cloudformation wait stack-update-complete \
+	  --stack-name "$(ENV)-ops"
+
 USER_DATA_VERSION ?=
 
 .PHONY: infa.files.machines.update

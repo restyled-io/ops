@@ -21,6 +21,18 @@ Outputs:
     Export:
       Name: !Sub "${Environment}-AppsSecurityGroupId"
 
+  WebhooksScaleUpPolicyArn:
+    Description: Scale Up Policy ARN
+    Value: !Ref WebhooksScaleUpPolicy
+    Export:
+      Name: !Sub "${Environment}-webhooks-ScaleUpPolicy"
+
+  WebhooksScaleDownPolicyArn:
+    Description: Scale Down Policy ARN
+    Value: !Ref WebhooksScaleDownPolicy
+    Export:
+      Name: !Sub "${Environment}-webhooks-ScaleDownPolicy"
+
 Mappings:
   LogRetentions:
     prod:
@@ -247,6 +259,37 @@ Resources:
           Subnets: !Split
             - ","
             - Fn::ImportValue: !Sub "${Environment}-SubnetIds"
+
+  WebhooksScaleUpPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: !Sub "${Environment}-Webhooks-ScaleUp"
+      PolicyType: StepScaling
+      ResourceId: !Ref WebhooksService
+      ResourceId: !Sub "service/${AppsCluster}/${WebhooksService.Name}"
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+      StepScalingPolicyConfiguration:
+        AdjustmentType: ExactCapacity
+        MetricAggregationType: Minimum
+        StepAdjustments:
+          - MetricIntervalLowerBound: 0
+            ScalingAdjustment: 8
+
+  WebhooksScaleDownPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: !Sub "${Environment}-Webhooks-ScaleDown"
+      PolicyType: StepScaling
+      ResourceId: !Sub "service/${AppsCluster}/${WebhooksService.Name}"
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+      StepScalingPolicyConfiguration:
+        AdjustmentType: ExactCapacity
+        MetricAggregationType: Maximum
+        StepAdjustments:
+          - MetricIntervalUpperBound: 0
+            ScalingAdjustment: 2
 
   WebhooksTaskDefinition:
     Type: AWS::ECS::TaskDefinition

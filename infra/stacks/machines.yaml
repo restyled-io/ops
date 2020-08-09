@@ -24,6 +24,19 @@ Parameters:
   AgentVersion:
     Type: String
 
+Outputs:
+  ScaleUpPolicyArn:
+    Description: Scale Up Policy ARN
+    Value: !Ref ScaleUpPolicy
+    Export:
+      Name: !Sub "${Environment}-machines-ScaleUpPolicy"
+
+  ScaleDownPolicyArn:
+    Description: Scale Down Policy ARN
+    Value: !Ref ScaleDownPolicy
+    Export:
+      Name: !Sub "${Environment}-machines-ScaleDownPolicy"
+
 Resources:
   # TODO: centralize this
   StoreCloudWatchLogsPolicy:
@@ -208,6 +221,22 @@ Resources:
             LifecycleTransition: autoscaling:EC2_INSTANCE_TERMINATING
             NotificationTargetARN: !GetAtt LifecycleHooksQueue.Arn
             RoleARN: !GetAtt AutoScalingRole.Arn
+
+  ScaleUpPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: ExactCapacity
+      AutoScalingGroupName: !Ref AutoScalingGroup
+      PolicyType: SimpleScaling
+      ScalingAdjustment: 4
+
+  ScaleDownPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: ExactCapacity
+      AutoScalingGroupName: !Ref AutoScalingGroup
+      PolicyType: SimpleScaling
+      ScalingAdjustment: 1
 
   LifecycleHooksQueue:
     Type: AWS::SQS::Queue

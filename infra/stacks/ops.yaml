@@ -121,7 +121,7 @@ Resources:
 
       Runtime: nodejs10.x
       Code:
-        S3Bucket: ops.restyled.io
+        S3Bucket: infra.restyled.io
         S3Key: check-redis-url.zip
       Handler: index.handler
       Timeout: 30
@@ -175,7 +175,7 @@ Resources:
 
       Runtime: python3.8
       Code:
-        S3Bucket: ops.restyled.io
+        S3Bucket: infra.restyled.io
         S3Key: record-metrics.zip
       Handler: main.handler
       Timeout: 30

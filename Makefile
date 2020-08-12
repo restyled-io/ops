@@ -111,4 +111,4 @@ infra.files.machines.update:
 	[ -n "$(USER_DATA_VERSION)" ]
 	$(AWS) s3 cp --acl public-read \
 	  infra/files/machines/user-data \
-	  s3://ops.restyled.io/machines/$(ENV)/user-data-v$(USER_DATA_VERSION)
+	  s3://infra.restyled.io/machines/$(ENV)/user-data-v$(USER_DATA_VERSION)

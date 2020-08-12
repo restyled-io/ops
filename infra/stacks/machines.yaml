@@ -187,7 +187,7 @@ Resources:
           sudo yum install -y awscli jq
 
           echo "Pulling machines-${Environment} user-data"
-          aws s3 cp "s3://ops.restyled.io/machines/${Environment}/user-data-v${UserDataVersion}" ./user-data
+          aws s3 cp "s3://infra.restyled.io/machines/${Environment}/user-data-v${UserDataVersion}" ./user-data
           chmod +x ./user-data
 
           echo "Executing user-data"

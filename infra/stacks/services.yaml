@@ -132,7 +132,7 @@ Resources:
 
       Runtime: nodejs10.x
       Code:
-        S3Bucket: ops.restyled.io
+        S3Bucket: infra.restyled.io
         S3Key: logdna-cloudwatch.zip
       Handler: index.handler
       Environment:

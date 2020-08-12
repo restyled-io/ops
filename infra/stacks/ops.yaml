@@ -210,19 +210,10 @@ Resources:
         - Protocol: email
           Endpoint: alarms@restyled.io
 
-  SilentAlarmsTopic:
-    Type: AWS::SNS::Topic
-    Properties:
-      DisplayName: !Sub "RestyledSilentAlarmsTopic-${Environment}"
-      Subscription:
-        - Protocol: email
-          Endpoint: null@restyled.io
-
   QueueEmptyAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions:
-        - !Ref SilentAlarmsTopic
         - Fn::ImportValue: !Sub "${Environment}-machines-ScaleDownPolicy"
         - Fn::ImportValue: !Sub "${Environment}-webhooks-ScaleDownPolicy"
       AlarmDescription: !Sub "Restyled ${Environment} Queue is empty"
@@ -243,7 +234,6 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions:
-        - !Ref SilentAlarmsTopic
         - Fn::ImportValue: !Sub "${Environment}-machines-ScaleUpPolicy"
         - Fn::ImportValue: !Sub "${Environment}-webhooks-ScaleUpPolicy"
       AlarmDescription: !Sub "Restyled ${Environment} Queue is at 30"
@@ -271,10 +261,11 @@ Resources:
       Dimensions:
         - Name: Environment
           Value: prod
-      EvaluationPeriods: 1
+      EvaluationPeriods: 2
       MetricName: QueueDepth
       Namespace: Restyled
-      Period: 60
+      Period: 120
       Statistic: Minimum
       Threshold: 90
+      TreatMissingData: breaching
       Unit: Count

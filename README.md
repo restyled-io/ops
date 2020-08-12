@@ -9,15 +9,15 @@ updates our SSM Parameter accordingly.
 
 **Deployment story**: `yarn run dist && yarn run s3.cp` builds and copies a zip
 file to S3, which is expected by the `machines` CloudFormation Stack. `yarn run
-deploy` can be used to update the Function directly.
+release.prod` can be used to update the Function directly.
 
 ## `lambda/record-metrics/`
 
 **Purpose**: Records Queue Depth to CloudWatch every minute.
 
 **Deployment story**: `make s3.cp` builds and copies a zip file to S3, which is
-expected by the `machines` CloudFormation Stack. `make deploy` can be used to
-update the Function directly.
+expected by the `machines` CloudFormation Stack. `make release.prod` can be used
+to update the Function directly.
 
 ## `lambda/logdna-cloudwatch/`
 
@@ -26,7 +26,7 @@ of their official one.
 
 **Deployment story**: `yarn run dist && yarn run s3.cp` builds and copies a zip
 file to S3, which is expected by the `services` CloudFormation Stack. `yarn run
-deploy` can be used to update the Function directly.
+release.prod` can be used to update the Function directly.
 
 ## `infra/`
 
@@ -39,12 +39,14 @@ expected to exist.
 - `services`: ECS Cluster and Services
 - `machines`: Autoscaling Group of Docker-enabled "Restyle Machines", which
   self-register to accept Restyler Jobs
+- `ops`: higher-level operational infra, such as Alarms and SNS Topics
+- `static-website`: re-usable template for CloudFronted-S3 static sites; used
+  for our blog and published Haddocks
 
 **Deployment story**: `make infra.stacks.*`
 
 ## TODO
 
-- Define EC2/ECS AutoScale policies in CF
 - Centralize generic IAM Policy resources in their own Stack?
 
 ---

@@ -317,6 +317,8 @@ Resources:
               ValueFrom: !Sub "/restyled/${Environment}/github-app-id"
             - Name: GITHUB_APP_KEY
               ValueFrom: !Sub "/restyled/${Environment}/github-app-key"
+            - Name: RESTYLERS_VERSION
+              ValueFrom: !Sub "/restyled/${Environment}/restylers-version"
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -392,6 +394,8 @@ Resources:
               ValueFrom: !Sub "/restyled/${Environment}/github-app-id"
             - Name: GITHUB_APP_KEY
               ValueFrom: !Sub "/restyled/${Environment}/github-app-key"
+            - Name: RESTYLERS_VERSION
+              ValueFrom: !Sub "/restyled/${Environment}/restylers-version"
           LogConfiguration:
             LogDriver: awslogs
             Options:

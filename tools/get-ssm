@@ -1,0 +1,4 @@
+#!/bin/sh
+aws --profile restyled ssm get-parameter \
+  --name "/restyled/$env/restyled-api-token" \
+  --output text --query 'Parameter.Value'

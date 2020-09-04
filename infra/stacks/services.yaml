@@ -11,9 +11,6 @@ Parameters:
   RestylerImage:
     Type: String
 
-  RestylersVersion:
-    Type: String
-
   AppsWebhooksDesiredCount:
     Type: Number
 
@@ -309,8 +306,6 @@ Resources:
               Value: !Select [0, !Split [":", !Ref RestylerImage]]
             - Name: RESTYLER_TAG
               Value: !Select [1, !Split [":", !Ref RestylerImage]]
-            - Name: RESTYLERS_VERSION
-              Value: !Ref RestylersVersion
           Secrets:
             - Name: DATABASE_URL
               ValueFrom: !Sub "/restyled/${Environment}/database-url"
@@ -386,8 +381,6 @@ Resources:
               Value: !Select [0, !Split [":", !Ref RestylerImage]]
             - Name: RESTYLER_TAG
               Value: !Select [1, !Split [":", !Ref RestylerImage]]
-            - Name: RESTYLERS_VERSION
-              Value: !Ref RestylersVersion
           Secrets:
             - Name: DATABASE_URL
               ValueFrom: !Sub "/restyled/${Environment}/database-url"

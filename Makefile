@@ -10,7 +10,6 @@ infra.stacks.services.update:
 	    ParameterKey=Environment,UsePreviousValue=true \
 	    ParameterKey=RestyledImage,UsePreviousValue=true \
 	    ParameterKey=RestylerImage,UsePreviousValue=true \
-	    ParameterKey=RestylersVersion,UsePreviousValue=true \
 	    ParameterKey=AppsWebhooksDesiredCount,UsePreviousValue=true \
 	  --capabilities CAPABILITY_NAMED_IAM
 	$(AWS) cloudformation wait stack-update-complete \

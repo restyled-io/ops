@@ -34,6 +34,10 @@ Resources:
       WebsiteConfiguration:
         IndexDocument: index.html
         ErrorDocument: 404.html
+      CorsConfiguration:
+        CorsRules:
+          - AllowedMethods: ["GET", "HEAD"]
+            AllowedOrigins: ["*"]
 
   ManageBucketPolicy:
     Type: AWS::IAM::ManagedPolicy

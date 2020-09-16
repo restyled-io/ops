@@ -96,7 +96,9 @@ Resources:
               OriginProtocolPolicy: http-only
         PriceClass: PriceClass_All
         DefaultCacheBehavior:
+          AllowedMethods: ["GET", "HEAD", "OPTIONS"]
           ForwardedValues:
+            Headers: ["Origin"]
             QueryString: false
           TargetOriginId: s3origin
           ViewerProtocolPolicy: redirect-to-https

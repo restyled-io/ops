@@ -269,3 +269,23 @@ Resources:
       Threshold: 90
       TreatMissingData: breaching
       Unit: Count
+
+  UnknownFailuresAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Ref AlarmsTopic
+      AlarmDescription: !Sub "Restyled ${Environment} Unknown Failures"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: Environment
+          Value: prod
+      EvaluationPeriods: 1
+      MetricName: JobsFailedUnknown
+      Namespace: Restyled
+      Period: 60
+      Statistic: Minimum
+      Threshold: 5
+      TreatMissingData: breaching
+      Unit: Count

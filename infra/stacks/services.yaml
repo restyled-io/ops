@@ -162,7 +162,7 @@ Resources:
     Properties:
       CidrIp: 0.0.0.0/0
       GroupId: !GetAtt AppsSecurityGroup.GroupId
-      IpProtocol: -1
+      IpProtocol: "-1"
       FromPort: -1
       ToPort: -1
 
@@ -322,8 +322,8 @@ Resources:
               "awslogs-group": !Ref WebhooksLogGroup
               "awslogs-region": !Ref AWS::Region
               "awslogs-stream-prefix": webhooks
-      Cpu: 256
-      Memory: 512
+      Cpu: "256"
+      Memory: "512"
       NetworkMode: awsvpc
       ExecutionRoleArn: !GetAtt AppsTaskExecutionRole.Arn
       RequiresCompatibilities: [FARGATE]
@@ -397,8 +397,8 @@ Resources:
               "awslogs-group": !Ref SyncMarketplaceLogGroup
               "awslogs-region": !Ref AWS::Region
               "awslogs-stream-prefix": sync-marketplace
-      Cpu: 256
-      Memory: 512
+      Cpu: "256"
+      Memory: "512"
       NetworkMode: awsvpc
       ExecutionRoleArn: !GetAtt AppsTaskExecutionRole.Arn
       RequiresCompatibilities: [FARGATE]

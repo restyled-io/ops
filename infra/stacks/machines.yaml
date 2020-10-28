@@ -207,8 +207,8 @@ Resources:
         VPCZoneIdentifier: !Split
           - ","
           - Fn::ImportValue: !Sub "${Environment}-SubnetIds"
-        MinSize: 1
-        MaxSize: 8
+        MinSize: "1"
+        MaxSize: "8"
         DesiredCapacity: !Ref DesiredCapacity
         MetricsCollection:
           - Granularity: 1Minute

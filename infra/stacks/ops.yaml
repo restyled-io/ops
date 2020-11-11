@@ -250,12 +250,12 @@ Resources:
       Threshold: 30
       Unit: Count
 
-  Queue90Alarm:
+  Queue120Alarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions:
         - !Ref AlarmsTopic
-      AlarmDescription: !Sub "Restyled ${Environment} Queue is at 90"
+      AlarmDescription: !Sub "Restyled ${Environment} Queue is at 120"
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
       Dimensions:
@@ -266,7 +266,7 @@ Resources:
       Namespace: Restyled
       Period: 120
       Statistic: Minimum
-      Threshold: 90
+      Threshold: 120
       TreatMissingData: breaching
       Unit: Count
 

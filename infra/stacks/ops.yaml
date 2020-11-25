@@ -187,7 +187,7 @@ Resources:
   RecordMetricsRule:
     Type: AWS::Events::Rule
     Properties:
-      Description: Record metrics every two minutes
+      Description: Record metrics every minute
       ScheduleExpression: rate(1 minute)
       State: "ENABLED"
       Targets:

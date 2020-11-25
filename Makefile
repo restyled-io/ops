@@ -1,6 +1,15 @@
 AWS ?= aws --profile restyled
 ENV ?= prod
 
+STACK_NAME     ?=
+STACK_TEMPLATE ?= $(STACK_NAME).yaml
+RAIN           ?= rain --profile restyled
+
+.PHONY: deploy
+deploy:
+	[ -n "$(STACK_NAME)" ]
+	$(RAIN) deploy "infra/stacks/$(STACK_TEMPLATE)" "$(ENV)-$(STACK_NAME)"
+
 .PHONY: infra.stacks.services.update
 infra.stacks.services.update:
 	$(AWS) cloudformation update-stack \

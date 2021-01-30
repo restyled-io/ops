@@ -1,0 +1,7 @@
+StackName: prod-blog
+Template: static-website.yaml
+Parameters:
+  - Name: Environment
+    Value: prod
+  - Name: Alias
+    Value: blog.restyled.io

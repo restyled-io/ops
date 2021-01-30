@@ -1,0 +1,6 @@
+StackName: prod-ops
+Template: ops.yaml
+Parameters:
+  - Name: Environment
+    Value: prod
+

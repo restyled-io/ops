@@ -1,0 +1,7 @@
+StackName: prod-docs
+Template: static-website.yaml
+Parameters:
+  - Name: Environment
+    Value: prod
+  - Name: Alias
+    Value: docs.restyled.io

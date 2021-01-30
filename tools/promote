@@ -1,7 +1,0 @@
-#!/bin/sh
-export AWS_PROFILE=restyled-ci
-export GIT_AUTHOR_NAME=Restyled.io
-export GIT_AUTHOR_EMAIL=commits@restyled.io
-export GIT_COMMITTER_NAME=Restyled.io
-export GIT_COMMITTER_EMAIL=commits@restyled.io
-exec stack --stack-yaml promote/stack.yaml exec promote -- "$@"

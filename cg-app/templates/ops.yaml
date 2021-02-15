@@ -255,6 +255,8 @@ Resources:
     Properties:
       AlarmActions:
         - !Ref AlarmsTopic
+      OKActions:
+        - !Ref AlarmsTopic
       AlarmDescription: !Sub "Restyled ${Environment} Queue is at 120"
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -274,6 +276,8 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions:
+        - !Ref AlarmsTopic
+      OKActions:
         - !Ref AlarmsTopic
       AlarmDescription: !Sub "Restyled ${Environment} Unknown Failures"
       ComparisonOperator: GreaterThanOrEqualToThreshold

@@ -1,9 +1,9 @@
-AWS ?= aws --profile restyled
-ENV ?= prod
-
 .PHONY: deploy
 deploy:
-	$(AWS) s3 sync ./cg-app/ s3://cg-app-cfstack-bucket/ --delete
+	AWS_PROFILE=restyled ./aws-sync/sync cg-app cg-app-cfstack-bucket
+
+AWS ?= aws --profile restyled
+ENV ?= prod
 
 STACK_NAME     ?=
 STACK_TEMPLATE ?= $(STACK_NAME).yaml

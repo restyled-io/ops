@@ -1,7 +1,12 @@
 StackName: prod-docs
 Template: static-website.yaml
 Parameters:
-  - Name: Environment
-    Value: prod
+  - Name: WildcardCertId
+    Value: 156fe9a9-b62e-48c5-820d-6e48231b9b7b
   - Name: Alias
     Value: docs.restyled.io
+  - Name: ManagementGroupName
+    Value: RestyledCI
+Tags:
+  - Key: Environment
+    Value: prod

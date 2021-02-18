@@ -1,27 +1,18 @@
 Parameters:
-  Environment:
-    Type: String
-    Description: |
-      Environment name, e.g. "prod". A Stack using the same Environment is
-      expected to exist and Export values we need.
-
   WildcardCertId:
     Type: String
-    Default: 156fe9a9-b62e-48c5-820d-6e48231b9b7b
-
   Alias:
     Type: String
-    Description: Domain alias for this static site
+  ManagementGroupName:
+    Type: String
 
 Outputs:
   BucketName:
     Description: S3 Bucket Name
     Value: !Ref Bucket
-
   DistributionId:
     Description: CloudFront Distribution Id
     Value: !Ref Distribution
-
   Domain:
     Description: Cloudfront Domain
     Value: !GetAtt Distribution.DomainName
@@ -56,7 +47,7 @@ Resources:
           }]
         }
       Groups:
-        - RestyledCI
+        - !Ref ManagementGroupName
 
   CreateInvalidationsPolicy:
     Type: AWS::IAM::ManagedPolicy
@@ -74,7 +65,7 @@ Resources:
           }]
         }
       Groups:
-        - RestyledCI
+        - !Ref ManagementGroupName
 
   Distribution:
     Type: AWS::CloudFront::Distribution

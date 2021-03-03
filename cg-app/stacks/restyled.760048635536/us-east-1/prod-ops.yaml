@@ -7,3 +7,7 @@ Parameters:
     Value: 30
   - Name: QueueAlertThreshold
     Value: 200
+
+  # Increment to deploy a template-only change
+  - Name: Version
+    Value: 1

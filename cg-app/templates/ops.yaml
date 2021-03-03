@@ -266,7 +266,7 @@ Resources:
       EvaluationPeriods: 2
       MetricName: QueueDepth
       Namespace: Restyled
-      Period: 200
+      Period: 120
       Statistic: Minimum
       Threshold: !Ref QueueAlertThreshold
       TreatMissingData: breaching

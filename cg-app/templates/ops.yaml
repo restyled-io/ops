@@ -1,10 +1,10 @@
 Parameters:
   Environment:
     Type: String
-    Description: |
-      Environment name, e.g. "prod". A Stack using the same Environment is
-      expected to exist and Export values we need.
-    Default: prod
+  QueueScaleUpThreshold:
+    Type: Number
+  QueueAlertThreshold:
+    Type: Number
 
 Resources:
   GetRestyledApiKeyPolicy:
@@ -230,13 +230,13 @@ Resources:
       Threshold: 0
       Unit: Count
 
-  Queue30Alarm:
+  QueueScaleUpAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions:
         - Fn::ImportValue: !Sub "${Environment}-machines-ScaleUpPolicy"
         - Fn::ImportValue: !Sub "${Environment}-webhooks-ScaleUpPolicy"
-      AlarmDescription: !Sub "Restyled ${Environment} Queue is at 30"
+      AlarmDescription: !Sub "Restyled ${Environment} Queue is at ScaleUp threshold"
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
       Dimensions:
@@ -247,17 +247,17 @@ Resources:
       Namespace: Restyled
       Period: 60
       Statistic: Minimum
-      Threshold: 30
+      Threshold: !Ref QueueScaleUpThreshold
       Unit: Count
 
-  Queue200Alarm:
+  QueueAlertAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions:
         - !Ref AlarmsTopic
       OKActions:
         - !Ref AlarmsTopic
-      AlarmDescription: !Sub "Restyled ${Environment} Queue is at 200"
+      AlarmDescription: !Sub "Restyled ${Environment} Queue is at Alert threshold"
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
       Dimensions:
@@ -268,7 +268,7 @@ Resources:
       Namespace: Restyled
       Period: 200
       Statistic: Minimum
-      Threshold: 200
+      Threshold: !Ref QueueAlertThreshold
       TreatMissingData: breaching
       Unit: Count
 

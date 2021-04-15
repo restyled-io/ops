@@ -10,4 +10,4 @@ Parameters:
 
   # Increment to deploy a template-only change
   - Name: Version
-    Value: 3
+    Value: 4

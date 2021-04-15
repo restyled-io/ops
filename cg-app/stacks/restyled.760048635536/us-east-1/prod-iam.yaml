@@ -1,0 +1,14 @@
+StackName: prod-iam
+Template: iam.yaml
+
+Parameters:
+  - Name: Environment
+    Value: prod
+
+  # Incremented when we need to deploy template-only changes
+  - Name: Version
+    Value: 0
+
+Tags:
+  - Key: Environment
+    Value: prod

@@ -12,93 +12,6 @@ Parameters:
     Type: Number
 
 Resources:
-  GetRestyledApiKeyPolicy:
-    Type: AWS::IAM::ManagedPolicy
-    Properties:
-      Description: !Sub "Access Parameter restyled/${Environment}/restyled-api-token"
-      PolicyDocument: !Sub |
-          {
-            "Version": "2012-10-17",
-            "Statement": [{
-              "Effect": "Allow",
-              "Action": "ssm:GetParameter",
-              "Resource": [
-                "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/restyled/${Environment}/restyled-api-token"
-              ]
-            }]
-          }
-      Roles:
-        - !Ref RecordMetricsExecutionRole
-
-  # TODO: centralize this
-  StoreCloudWatchLogsPolicy:
-    Type: AWS::IAM::ManagedPolicy
-    Properties:
-      Description: Store CloudWatch Logs
-      PolicyDocument: |
-        {
-          "Version": "2012-10-17",
-          "Statement": [{
-            "Effect": "Allow",
-            "Action": [
-              "logs:CreateLogGroup",
-              "logs:CreateLogStream",
-              "logs:PutLogEvents"
-            ],
-            "Resource": [
-              "arn:aws:logs:*:*:*"
-            ]
-          }]
-        }
-      Roles:
-        - !Ref CheckRedisUrlExecutionRole
-        - !Ref RecordMetricsExecutionRole
-
-  CloudWatchMetricsPolicy:
-    Type: AWS::IAM::ManagedPolicy
-    Properties:
-      Description: Full access to CloudWatch Metrics
-      PolicyDocument: |
-        {
-          "Version": "2012-10-17",
-          "Statement": [{
-            "Effect": "Allow",
-            "Action": [
-              "cloudwatch:ListMetrics",
-              "cloudwatch:GetMetric*",
-              "cloudwatch:PutMetric*"
-            ],
-            "Resource": "*"
-          }]
-        }
-      Roles:
-        - !Ref RecordMetricsExecutionRole
-
-  # Dedicate policy for reading and writing what this Lambda needs specifically
-  CheckRedisUrlPolicy:
-    Type: AWS::IAM::ManagedPolicy
-    Properties:
-      Description: !Sub "Parameters access for restyled-${Environment}-check-redis-url"
-      PolicyDocument: !Sub |
-          {
-            "Version": "2012-10-17",
-            "Statement": [{
-              "Effect": "Allow",
-              "Action": "ssm:*",
-              "Resource": [
-                "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/restyled/${Environment}/redis-url"
-              ]
-            } , {
-              "Effect": "Allow",
-              "Action": "ssm:GetParameter",
-              "Resource": [
-                "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/restyled/${Environment}/heroku-api-key"
-              ]
-            }]
-          }
-      Roles:
-        - !Ref CheckRedisUrlExecutionRole
-
   CheckRedisUrlExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -116,6 +29,12 @@ Resources:
             "Action": "sts:AssumeRole"
           }]
         }
+
+      ManagedPolicyArns:
+        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-cloudwatch-metrics"
+        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-get-parameter"
+        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-store-cloudwatch-logs"
+        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-redis-url"
 
   CheckRedisUrl:
     Type: AWS::Lambda::Function
@@ -170,6 +89,11 @@ Resources:
             "Action": "sts:AssumeRole"
           }]
         }
+
+      ManagedPolicyArns:
+        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-cloudwatch-metrics"
+        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-get-parameter"
+        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-store-cloudwatch-logs"
 
   RecordMetrics:
     Type: AWS::Lambda::Function

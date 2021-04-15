@@ -1,0 +1,97 @@
+Parameters:
+  Environment:
+    Type: String
+
+  Version:
+    Type: Number
+    Default: 0
+
+Resources:
+  GetParameterPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: !Sub "Get SSM Parameters under /restyled/${Environment}"
+      ManagedPolicyName: !Sub "restyled-${Environment}-get-parameter"
+      PolicyDocument: !Sub |
+        {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Action": "ssm:GetParameter",
+            "Resource": [
+              "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/restyled/${Environment}/*"
+            ]
+          }]
+        }
+
+  RedisUrlPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: !Sub "Full access to SSM Parameter /restyled/${Environment}/redis-url"
+      ManagedPolicyName: !Sub "restyled-${Environment}-redis-url"
+      PolicyDocument: !Sub |
+        {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Action": "ssm:*",
+            "Resource": [
+              "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/restyled/${Environment}/redis-url"
+            ]
+          }]
+        }
+
+  StoreCloudWatchLogsPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Store CloudWatch Logs
+      ManagedPolicyName: !Sub "restyled-${Environment}-store-cloudwatch-logs"
+      PolicyDocument: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Action": [
+              "logs:CreateLogGroup",
+              "logs:CreateLogStream",
+              "logs:PutLogEvents"
+            ],
+            "Resource": [
+              "arn:aws:logs:*:*:*"
+            ]
+          }]
+        }
+
+  CloudWatchMetricsPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Full access to CloudWatch Metrics
+      ManagedPolicyName: !Sub "restyled-${Environment}-cloudwatch-metrics"
+      PolicyDocument: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Action": [
+              "cloudwatch:ListMetrics",
+              "cloudwatch:GetMetric*",
+              "cloudwatch:PutMetric*"
+            ],
+            "Resource": "*"
+          }]
+        }
+
+  LifecycleActionsPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Completing ASG Lifecycle actions
+      ManagedPolicyName: !Sub "restyled-${Environment}-complete-lifecycle-action"
+      PolicyDocument: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Action": "autoscaling:CompleteLifecycleAction",
+            "Resource": "*"
+          }]
+        }

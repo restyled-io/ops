@@ -9,40 +9,30 @@ STACK_NAME     ?=
 STACK_TEMPLATE ?= $(STACK_NAME).yaml
 RAIN           ?= rain --profile restyled
 
-.PHONY: infra.stacks.services.update
-infra.stacks.services.update:
-	$(AWS) cloudformation update-stack \
+.PHONY: infra.stacks.services.deploy
+infra.stacks.services.deploy:
+	$(AWS) s3 cp --acl public-read \
+	  infra/stacks/services.yaml \
+	  s3://infra.restyled.io/templates/$(ENV)/services.yaml
+	$(AWS) cloudformation deploy \
 	  --stack-name "$(ENV)-services" \
-	  --template-body "$$(cat "infra/stacks/services.yaml")" \
-	  --parameters \
-	    ParameterKey=Environment,UsePreviousValue=true \
-	    ParameterKey=RestyledImage,UsePreviousValue=true \
-	    ParameterKey=RestylerImage,UsePreviousValue=true \
-	    ParameterKey=AppsWebhooksDesiredCount,UsePreviousValue=true \
+	  --template-file "infra/stacks/services.yaml" \
 	  --capabilities CAPABILITY_NAMED_IAM
-	$(AWS) cloudformation wait stack-update-complete \
-	  --stack-name "$(ENV)-services"
 
-.PHONY: infra.stacks.machines.update
-infra.stacks.machines.update:
-	$(AWS) cloudformation update-stack \
+.PHONY: infra.stacks.machines.deploy
+infra.stacks.machines.deploy:
+	$(AWS) s3 cp --acl public-read \
+	  infra/stacks/machines.yaml \
+	  s3://infra.restyled.io/templates/$(ENV)/machines.yaml
+	$(AWS) cloudformation deploy \
 	  --stack-name "$(ENV)-machines" \
-	  --template-body "$$(cat "infra/stacks/machines.yaml")" \
-	  --parameters \
-	    ParameterKey=Environment,UsePreviousValue=true \
-	    ParameterKey=InstanceKeyPair,UsePreviousValue=true \
-	    ParameterKey=RestyledHost,UsePreviousValue=true \
-	    ParameterKey=DesiredCapacity,UsePreviousValue=true \
-	    ParameterKey=UserDataVersion,UsePreviousValue=true \
-	    ParameterKey=AgentVersion,UsePreviousValue=true \
+	  --template-file "infra/stacks/machines.yaml" \
 	  --capabilities CAPABILITY_NAMED_IAM
-	$(AWS) cloudformation wait stack-update-complete \
-	  --stack-name "$(ENV)-machines"
 
 USER_DATA_VERSION ?=
 
-.PHONY: infa.files.machines.update
-infra.files.machines.update:
+.PHONY: infa.files.machines.deploy
+infra.files.machines.deploy:
 	[ -n "$(USER_DATA_VERSION)" ]
 	$(AWS) s3 cp --acl public-read \
 	  infra/files/machines/user-data \

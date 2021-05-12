@@ -273,7 +273,7 @@ Resources:
         MetricAggregationType: Minimum
         StepAdjustments:
           - MetricIntervalLowerBound: 0
-            ScalingAdjustment: 8
+            ScalingAdjustment: 16
 
   WebhooksScaleDownPolicy:
     Type: AWS::ApplicationAutoScaling::ScalingPolicy

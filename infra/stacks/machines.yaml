@@ -228,7 +228,7 @@ Resources:
       AdjustmentType: ExactCapacity
       AutoScalingGroupName: !Ref AutoScalingGroup
       PolicyType: SimpleScaling
-      ScalingAdjustment: 4
+      ScalingAdjustment: 8
 
   ScaleDownPolicy:
     Type: AWS::AutoScaling::ScalingPolicy

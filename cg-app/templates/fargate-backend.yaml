@@ -1,0 +1,248 @@
+Parameters:
+  Environment:
+    Type: String
+
+  Name:
+    Type: String
+
+  Subcommand:
+    Type: String
+
+  Approot:
+    Type: String
+
+  RestyledImage:
+    Type: String
+
+  RestylerImage:
+    Type: String
+
+  LogRetentionInDays:
+    Type: Number
+    Default: 7
+
+  ServiceName:
+    Type: String
+    Default: ""
+
+  ServiceDesiredCount:
+    Type: Number
+    Default: 2
+
+  ServiceScaleUpCount:
+    Type: Number
+    Default: 4
+
+  ServiceScaleMetric:
+    Type: String
+    Default: QueueDepth
+
+  ServiceScaleUpThreshold:
+    Type: Number
+    Default: 30
+
+  ScheduleExpression:
+    Type: String
+    Default: ""
+
+  Version:
+    Type: Number
+    Default: 0
+
+Outputs:
+  Version:
+    Description: "Template version"
+    Value: !Ref Version
+
+Conditions:
+  HasService: !Not [!Equals ["", !Ref ServiceName]]
+  HasScheduleExpression: !Not [!Equals ["", !Ref ScheduleExpression]]
+
+Resources:
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub "${Environment} Cluster Security Group"
+      VpcId:
+        Fn::ImportValue: !Sub "${Environment}-VPCId"
+
+  SecurityGroupEgress:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      GroupId: !GetAtt SecurityGroup.GroupId
+      IpProtocol: "-1"
+      FromPort: -1
+      ToPort: -1
+
+  Service:
+    Condition: HasService
+    Type: AWS::ECS::Service
+    Properties:
+      LaunchType: FARGATE
+      Cluster: !Ref Cluster
+      ServiceName: !Ref ServiceName
+      TaskDefinition: !Ref TaskDefinition
+      DesiredCount: !Ref ServiceDesiredCount
+      NetworkConfiguration:
+         AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !GetAtt SecurityGroup.GroupId
+          Subnets: !Split
+            - ","
+            - Fn::ImportValue: !Sub "${Environment}-SubnetIds"
+
+  ScaleUpPolicy:
+    Condition: HasService
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: !Sub "${Environment}-${Service}-ScaleUp"
+      PolicyType: StepScaling
+      ResourceId: !Sub "service/${Cluster}/${Service.Name}"
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+      StepScalingPolicyConfiguration:
+        AdjustmentType: ExactCapacity
+        MetricAggregationType: Minimum
+        StepAdjustments:
+          - MetricIntervalLowerBound: 0
+            ScalingAdjustment: !Ref ServiceScaleUpCount
+
+  ScaleUpAlarm:
+    Condition: HasService
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Ref ScaleUpPolicy
+      AlarmDescription: !Sub "Scale up ${Environment} ${Service}"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: Environment
+          Value: !Ref Environment
+      EvaluationPeriods: 1
+      MetricName: !Ref ServiceScaleMetric
+      Namespace: Restyled
+      Period: 60
+      Statistic: Minimum
+      Threshold: !Ref ServiceScaleUpThreshold
+      Unit: Count
+
+  ScaleDownPolicy:
+    Condition: HasService
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: !Sub "${Environment}-${Service}-ScaleDown"
+      PolicyType: StepScaling
+      ResourceId: !Sub "service/${Cluster}/${Service.Name}"
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+      StepScalingPolicyConfiguration:
+        AdjustmentType: ExactCapacity
+        MetricAggregationType: Maximum
+        StepAdjustments:
+          - MetricIntervalUpperBound: 0
+            ScalingAdjustment: !Ref ServiceDesiredCount
+
+  ScaleDownAlarm:
+    Condition: HasService
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Ref ScaleDownPolicy
+      AlarmDescription: !Sub "Scale down ${Environment} ${Service}"
+      ComparisonOperator: LessThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: Environment
+          Value: !Ref Environment
+      EvaluationPeriods: 1
+      MetricName: !Ref ServiceScaleMetric
+      Namespace: Restyled
+      Period: 60
+      Statistic: Maximum
+      Threshold: 0
+      Unit: Count
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub "restyled-${Environment}-${Name}"
+      ContainerDefinitions:
+        - Name: main
+          Image: !Ref RestyledImage
+          Command: [/app/restyled.io, !Ref Subcommand]
+          Environment:
+            - Name: APPROOT
+              Value: !Ref Approot
+            - Name: RESTYLER_IMAGE
+              Value: !Select [0, !Split [":", !Ref RestylerImage]]
+            - Name: RESTYLER_TAG
+              Value: !Select [1, !Split [":", !Ref RestylerImage]]
+          Secrets:
+            - Name: DATABASE_URL
+              ValueFrom: !Sub "/restyled/${Environment}/database-url"
+            - Name: GITHUB_RATE_LIMIT_TOKEN
+              ValueFrom: !Sub "/restyled/${Environment}/github-rate-limit-token"
+            - Name: REDIS_URL
+              ValueFrom: !Sub "/restyled/${Environment}/redis-url"
+            - Name: GITHUB_APP_ID
+              ValueFrom: !Sub "/restyled/${Environment}/github-app-id"
+            - Name: GITHUB_APP_KEY
+              ValueFrom: !Sub "/restyled/${Environment}/github-app-key"
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              "awslogs-group": !Ref LogGroup
+              "awslogs-region": !Ref AWS::Region
+              "awslogs-stream-prefix": !Ref Name
+      Cpu: "256"
+      Memory: "512"
+      NetworkMode: awsvpc
+      ExecutionRoleArn: !Sub "arn:aws:iam::${AWS::AccountId}:role/restyled-${Environment}-ecs-execution"
+      RequiresCompatibilities: [FARGATE]
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "restyled/${Environment}/${Name}"
+      RetentionInDays: !Ref LogRetentionInDays
+
+  LogGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+        DestinationArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:restyled-${Environment}-global-log-forwarder"
+        LogGroupName: !Ref LogGroup
+        FilterPattern: ""
+
+  ScheduledTask:
+    Condition: HasScheduleExpression
+    Type: AWS::Events::Rule
+    Properties:
+      Description: !Sub "Scheduled task for restyled-${Environment}-${Name}"
+      ScheduleExpression: !Ref ScheduleExpression
+      State: ENABLED
+      Targets:
+        - Id: !Sub "restyled-${Environment}-${Name}"
+          RoleArn: !Sub "arn:aws:iam::${AWS::AccountId}:role/restyled-${Environment}-ecs-events"
+          Arn: !GetAtt Cluster.Arn
+          EcsParameters:
+            TaskDefinitionArn: !Ref TaskDefinition
+            TaskCount: 1
+            LaunchType: FARGATE
+            NetworkConfiguration:
+              AwsVpcConfiguration:
+                AssignPublicIp: ENABLED
+                SecurityGroups:
+                  - !GetAtt SecurityGroup.GroupId
+                Subnets: !Split
+                  - ","
+                  - Fn::ImportValue: !Sub "${Environment}-SubnetIds"

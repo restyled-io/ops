@@ -12,7 +12,7 @@ Parameters:
   - Name: FunctionHandler
     Value: index.handler
   - Name: LogInvocation
-    Value: True
+    Value: "True"
 Tags:
   - Key: Environment
     Value: prod

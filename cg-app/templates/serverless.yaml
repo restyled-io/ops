@@ -22,6 +22,10 @@ Parameters:
     Type: String
     Default: "lambda-execution"
 
+  LogInvocation:
+    Type: String
+    AllowedValues: ["True", "False"]
+    Default: "False"
   ScheduleExpression:
     Type: String
     Default: ""
@@ -36,6 +40,7 @@ Outputs:
     Value: !Ref Version
 
 Conditions:
+  HasLogInvocation: !Equals [!Ref LogInvocation, "True"]
   HasScheduleExpression: !Not [!Equals [!Ref ScheduleExpression, ""]]
 
 Resources:
@@ -64,6 +69,17 @@ Resources:
       Targets:
         - Id: !Sub "restyled-${Environment}-${FunctionName}"
           Arn: !GetAtt LambdaFunction.Arn
+
+  LambdaInvokePermission:
+    Condition: HasLogInvocation
+    Type: AWS::Lambda::Permission
+    DependsOn: LogForwarder
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LambdaFunction
+      Principal: !Sub "logs.${AWS::Region}.amazonaws.com"
+      SourceAccount: !Ref AWS::AccountId
+      SourceArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:*"
 
   LambdaSchedulePermission:
     Condition: HasScheduleExpression

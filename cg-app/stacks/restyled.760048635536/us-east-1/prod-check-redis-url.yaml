@@ -1,0 +1,20 @@
+StackName: prod-check-redis-url
+Template: serverless.yaml
+Parameters:
+  - Name: Environment
+    Value: prod
+  - Name: FunctionName
+    Value: check-redis
+  - Name: FunctionSourceKey
+    Value: check-redis-url.zip
+  - Name: FunctionRuntime
+    Value: nodejs10.x
+  - Name: FunctionHandler
+    Value: index.handler
+  - Name: FunctionRole
+    Value: check-redis-execution
+  - Name: ScheduleExpression
+    Value: rate(2 minute)
+Tags:
+  - Key: Environment
+    Value: prod

@@ -1,0 +1,18 @@
+StackName: prod-log-forwarder
+Template: serverless.yaml
+Parameters:
+  - Name: Environment
+    Value: prod
+  - Name: FunctionName
+    Value: global-log-forwarder
+  - Name: FunctionSourceKey
+    Value: logdna-cloudwatch.zip
+  - Name: FunctionRuntime
+    Value: nodejs10.x
+  - Name: FunctionHandler
+    Value: index.handler
+  - Name: LogInvocation
+    Value: True
+Tags:
+  - Key: Environment
+    Value: prod

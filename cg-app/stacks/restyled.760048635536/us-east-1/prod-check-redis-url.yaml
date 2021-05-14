@@ -14,7 +14,7 @@ Parameters:
   - Name: FunctionRole
     Value: check-redis-url
   - Name: ScheduleExpression
-    Value: rate(2 minute)
+    Value: rate(2 minutes)
 Tags:
   - Key: Environment
     Value: prod

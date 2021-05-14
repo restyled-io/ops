@@ -23,6 +23,10 @@ Outputs:
     Export:
       Name: !Sub "${Environment}-SubnetIds"
 
+  Version:
+    Description: "Template version"
+    Value: !Ref Version
+
 Resources:
   VPC:
     Type: AWS::EC2::VPC

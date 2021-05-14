@@ -1,10 +1,4 @@
 Parameters:
-  # Unused. Only present to increment in the stacks definition to trigger a
-  # deploy when it's a template-only change.
-  Version:
-    Type: Number
-    Default: 0
-
   Environment:
     Type: String
   FunctionName:
@@ -27,7 +21,16 @@ Parameters:
 
   ScheduleExpression:
     Type: String
-    Default: "" # rate(1 minute)
+    Default: ""
+
+  Version:
+    Type: Number
+    Default: 0
+
+Outputs:
+  Version:
+    Description: "Template version"
+    Value: !Ref Version
 
 Conditions:
   HasScheduleExpression: !Not [!Equals [!Ref ScheduleExpression, ""]]

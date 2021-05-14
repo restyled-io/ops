@@ -16,66 +16,6 @@ Outputs:
     Value: !Ref Version
 
 Resources:
-  CheckRedisUrlExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument: |
-        {
-          "Version": "2012-10-17",
-          "Statement": [{
-            "Effect": "Allow",
-            "Principal": {
-              "Service": [
-                "edgelambda.amazonaws.com",
-                "lambda.amazonaws.com"
-              ]
-            },
-            "Action": "sts:AssumeRole"
-          }]
-        }
-
-      ManagedPolicyArns:
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-cloudwatch-metrics"
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-get-parameter"
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-store-cloudwatch-logs"
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-redis-url"
-
-  CheckRedisUrl:
-    Type: AWS::Lambda::Function
-    Properties:
-      FunctionName: !Sub "restyled-${Environment}-check-redis-url"
-      Description: |
-        Check (and fix) redis-url SSM Parameter
-
-      Runtime: nodejs10.x
-      Code:
-        S3Bucket: infra.restyled.io
-        S3Key: check-redis-url.zip
-      Handler: index.handler
-      Timeout: 30
-      Environment:
-        Variables:
-          ENV: !Ref Environment
-      Role: !GetAtt CheckRedisUrlExecutionRole.Arn
-
-  CheckRedisUrlRule:
-    Type: AWS::Events::Rule
-    Properties:
-      Description: CheckRedisUrl every two minutes
-      ScheduleExpression: rate(2 minutes)
-      State: "ENABLED"
-      Targets:
-        - Id: !Sub "restyled-${Environment}-check-redis-url"
-          Arn: !GetAtt CheckRedisUrl.Arn
-
-  CheckRedisUrlPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref CheckRedisUrl
-      Action: lambda:InvokeFunction
-      Principal: events.amazonaws.com
-      SourceArn: !GetAtt CheckRedisUrlRule.Arn
-
   AlarmsTopic:
     Type: AWS::SNS::Topic
     Properties:

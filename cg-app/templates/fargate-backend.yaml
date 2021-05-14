@@ -100,15 +100,24 @@ Resources:
             - ","
             - Fn::ImportValue: !Sub "${Environment}-SubnetIds"
 
+  ServiceScalableTarget:
+    Condition: HasService
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      MaxCapacity: !Ref ServiceScaleUpCount
+      MinCapacity: !Ref ServiceDesiredCount
+      ResourceId: !Sub "service/${Cluster}/${Service.Name}"
+      RoleARN: !Sub "arn:aws:iam::${AWS::AccountId}:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService"
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+
   ScaleUpPolicy:
     Condition: HasService
     Type: AWS::ApplicationAutoScaling::ScalingPolicy
     Properties:
       PolicyName: !Sub "${Environment}-${Service}-ScaleUp"
       PolicyType: StepScaling
-      ResourceId: !Sub "service/${Cluster}/${Service.Name}"
-      ScalableDimension: ecs:service:DesiredCount
-      ServiceNamespace: ecs
+      ScalingTargetId: !Ref ServiceScalableTarget
       StepScalingPolicyConfiguration:
         AdjustmentType: ExactCapacity
         MetricAggregationType: Minimum
@@ -142,9 +151,7 @@ Resources:
     Properties:
       PolicyName: !Sub "${Environment}-${Service}-ScaleDown"
       PolicyType: StepScaling
-      ResourceId: !Sub "service/${Cluster}/${Service.Name}"
-      ScalableDimension: ecs:service:DesiredCount
-      ServiceNamespace: ecs
+      ScalingTargetId: !Ref ServiceScalableTarget
       StepScalingPolicyConfiguration:
         AdjustmentType: ExactCapacity
         MetricAggregationType: Maximum

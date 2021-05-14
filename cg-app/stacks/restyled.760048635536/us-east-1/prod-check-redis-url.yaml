@@ -12,7 +12,7 @@ Parameters:
   - Name: FunctionHandler
     Value: index.handler
   - Name: FunctionRole
-    Value: check-redis-execution
+    Value: check-redis-url
   - Name: ScheduleExpression
     Value: rate(2 minute)
 Tags:

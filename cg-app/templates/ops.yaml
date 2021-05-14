@@ -34,7 +34,7 @@ Resources:
       DatapointsToAlarm: 1
       Dimensions:
         - Name: Environment
-          Value: prod
+          Value: !Ref Environment
       EvaluationPeriods: 2
       MetricName: QueueDepth
       Namespace: Restyled
@@ -56,7 +56,7 @@ Resources:
       DatapointsToAlarm: 1
       Dimensions:
         - Name: Environment
-          Value: prod
+          Value: !Ref Environment
       EvaluationPeriods: 1
       MetricName: JobsFailedUnknown
       Namespace: Restyled

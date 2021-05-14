@@ -1,0 +1,34 @@
+StackName: prod-machines
+Template: restyle-machines.yaml
+Parameters:
+  # Rarely changed
+  - Name: Environment
+    Value: prod
+  - Name: InstanceAmi
+    Value: /aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id
+  - Name: InstanceKeyPair
+    Value: patrick@leo
+  - Name: RestyledHost
+    Value: https://restyled.io
+
+  # Settings
+  - Name: DesiredCapacity
+    Value: 1
+  - Name: ScaleUpThreshold
+    Value: 30
+  - Name: ScaleUpCapacity
+    Value: 6
+
+  # Versions
+  - Name: AgentVersion
+    Value: 1.1.0
+  - Name: UserDataVersion
+    Value: 1.0.2
+
+  # Increment to deploy a template-only change
+  - Name: Version
+    Value: 0
+
+Tags:
+  - Name: Environment
+    Value: prod

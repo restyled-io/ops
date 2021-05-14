@@ -1,0 +1,310 @@
+Parameters:
+  Environment:
+    Type: String
+
+  InstanceAmi:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+
+  InstanceKeyPair:
+    Type: String
+
+  RestyledHost:
+    Type: String
+
+  DesiredCapacity:
+    Type: Number
+
+  UserDataVersion:
+    Type: String
+
+  AgentVersion:
+    Type: String
+
+  ScaleUpThreshold:
+    Type: Number
+
+  ScaleUpCapacity:
+    Type: Number
+
+  Version:
+    Type: Number
+    Default: 0
+
+Resources:
+  # TODO: centralize this
+  StoreCloudWatchLogsPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Store CloudWatch Logs
+      PolicyDocument: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            }
+          ]
+        }
+      Roles:
+        - !Ref AutoScalingInstanceRole
+
+  # TODO: centralize this
+  GetSSMParameterPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: !Sub "Read SSM Parameters for restyled-${Environment}"
+      PolicyDocument: !Sub |
+          {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "ssm:GetParameters",
+                  "ssm:GetParameter"
+                ],
+                "Resource": [
+                  "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/restyled/${Environment}/*"
+                ]
+              }
+            ]
+          }
+      Roles:
+        - !Ref AutoScalingInstanceRole
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub "${Environment}-machines Security Group"
+      VpcId:
+        Fn::ImportValue: !Sub "${Environment}-VPCId"
+      SecurityGroupIngress:
+        - SourceSecurityGroupId:
+            Fn::ImportValue: !Sub "${Environment}-AppsSecurityGroupId"
+          IpProtocol: tcp
+          FromPort: 2376
+          ToPort: 2376
+
+        # Needed while the Heroku app is reading docker-ps
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 2376
+          ToPort: 2376
+
+        # Needed while working on initial instance setup
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "restyled/${Environment}/machines"
+      RetentionInDays: 7
+
+  AutoScalingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument: |
+        {
+          "Version": "2008-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "autoscaling.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        }
+
+  AutoScalingInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument: |
+        {
+          "Version": "2008-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        }
+
+  AutoScalingInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref AutoScalingInstanceRole
+
+  LaunchConfiguration:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !Ref InstanceAmi
+      IamInstanceProfile: !Ref AutoScalingInstanceProfile
+      KeyName: !Ref InstanceKeyPair
+      AssociatePublicIpAddress: true
+      SecurityGroups:
+        - !Ref SecurityGroup
+      InstanceMonitoring: true
+      InstanceType: t2.micro
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+          set -eu
+
+          echo "Installing tooling required for setup"
+          sudo yum install -y awscli jq
+
+          echo "Pulling machines-${Environment} user-data"
+          aws s3 cp "s3://infra.restyled.io/machines/${Environment}/user-data-v${UserDataVersion}" ./user-data
+          chmod +x ./user-data
+
+          echo "Executing user-data"
+          env \
+            "AGENT_VERSION=${AgentVersion}" \
+            "ENV=${Environment}" \
+            "LIFECYCLE_HOOKS_URL=${LifecycleHooksQueue}" \
+            "LOG_GROUP=${LogGroup}" \
+            "REGION=${AWS::Region}" \
+            "RESTYLED_API_HOST=${RestyledHost}" \
+            ./user-data
+
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+        LaunchConfigurationName: !Ref LaunchConfiguration
+        VPCZoneIdentifier: !Split
+          - ","
+          - Fn::ImportValue: !Sub "${Environment}-SubnetIds"
+        MinSize: !Sub "${DesiredCapacity}"
+        MaxSize: !Sub "${ScaleUpCapacity}"
+        DesiredCapacity: !Ref DesiredCapacity
+        MetricsCollection:
+          - Granularity: 1Minute
+        LifecycleHookSpecificationList:
+          - LifecycleHookName: !Sub "restyled-machine-${Environment}-launching"
+            LifecycleTransition: autoscaling:EC2_INSTANCE_LAUNCHING
+            NotificationTargetARN: !GetAtt LifecycleHooksQueue.Arn
+            RoleARN: !GetAtt AutoScalingRole.Arn
+          - LifecycleHookName: !Sub "restyled-machine-${Environment}-terminating"
+            LifecycleTransition: autoscaling:EC2_INSTANCE_TERMINATING
+            NotificationTargetARN: !GetAtt LifecycleHooksQueue.Arn
+            RoleARN: !GetAtt AutoScalingRole.Arn
+
+  ScaleUpPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: ExactCapacity
+      AutoScalingGroupName: !Ref AutoScalingGroup
+      PolicyType: SimpleScaling
+      ScalingAdjustment: !Ref ScaleUpCapacity
+
+  ScaleUpAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Ref ScaleUpPolicy
+      AlarmDescription: !Sub "Scale up restyled-${Environment}-machines"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: Environment
+          Value: !Ref Environment
+      EvaluationPeriods: 1
+      MetricName: QueueDepth
+      Namespace: Restyled
+      Period: 60
+      Statistic: Minimum
+      Threshold: !Ref ScaleUpThreshold
+      Unit: Count
+
+  ScaleDownPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: ExactCapacity
+      AutoScalingGroupName: !Ref AutoScalingGroup
+      PolicyType: SimpleScaling
+      ScalingAdjustment: 1
+
+  ScaleDownAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Ref ScaleDownPolicy
+      AlarmDescription: !Sub "Scale down restyled-${Environment}-machines"
+      ComparisonOperator: LessThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: Environment
+          Value: !Ref Environment
+      EvaluationPeriods: 1
+      MetricName: QueueDepth
+      Namespace: Restyled
+      Period: 60
+      Statistic: Maximum
+      Threshold: 0
+      Unit: Count
+
+  LifecycleHooksQueue:
+    Type: AWS::SQS::Queue
+    Properties: {}
+
+  LifecycleHooksPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Full access to LifecycleHooks Queue
+      PolicyDocument: !Sub |
+        {
+           "Version": "2012-10-17",
+           "Statement": [{
+              "Effect": "Allow",
+              "Action": [
+                "sns:Publish",
+                "sqs:*"
+              ],
+              "Resource": "${LifecycleHooksQueue.Arn}"
+           }]
+        }
+      Roles:
+        - !Ref AutoScalingRole
+        - !Ref AutoScalingInstanceRole
+
+  LifecycleActionsPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Completing ASG Lifecycle actions
+      PolicyDocument: |
+        {
+           "Version": "2012-10-17",
+           "Statement": [{
+              "Effect": "Allow",
+              "Action": "autoscaling:CompleteLifecycleAction",
+              "Resource": "*"
+           }]
+        }
+      Roles:
+        - !Ref AutoScalingInstanceRole

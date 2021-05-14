@@ -49,30 +49,7 @@ Resources:
       Environment:
         Variables:
           ENV: !Ref Environment
-      Role: !GetAtt LambdaExecutionRole.Arn
-
-  LambdaExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument: |
-        {
-          "Version": "2012-10-17",
-          "Statement": [{
-            "Effect": "Allow",
-            "Principal": {
-              "Service": [
-                "edgelambda.amazonaws.com",
-                "lambda.amazonaws.com"
-              ]
-            },
-            "Action": "sts:AssumeRole"
-          }]
-        }
-
-      ManagedPolicyArns:
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-cloudwatch-metrics"
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-get-parameter"
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-store-cloudwatch-logs"
+      Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/restyled-${Environment}-lambda-execution"
 
   LambdaScheduleRule:
     Condition: HasScheduleExpression

@@ -100,3 +100,28 @@ Resources:
             "Resource": "*"
           }]
         }
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: !Sub "Execution role for ${Environment} Lambdas"
+      RoleName: !Sub "restyled-${Environment}-lambda-execution"
+      AssumeRolePolicyDocument: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "edgelambda.amazonaws.com",
+                "lambda.amazonaws.com"
+              ]
+            },
+            "Action": "sts:AssumeRole"
+          }]
+        }
+
+      ManagedPolicyArns:
+        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-cloudwatch-metrics"
+        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-get-parameter"
+        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-store-cloudwatch-logs"

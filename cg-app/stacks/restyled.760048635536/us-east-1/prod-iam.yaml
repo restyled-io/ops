@@ -7,7 +7,7 @@ Parameters:
 
   # Incremented when we need to deploy template-only changes
   - Name: Version
-    Value: 0
+    Value: 1
 
 Tags:
   - Key: Environment

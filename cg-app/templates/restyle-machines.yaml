@@ -73,6 +73,13 @@ Resources:
       LogGroupName: !Sub "restyled/${Environment}/machines"
       RetentionInDays: 7
 
+  LogGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+        DestinationArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:restyled-${Environment}-global-log-forwarder"
+        LogGroupName: !Ref LogGroup
+        FilterPattern: ""
+
   LaunchConfiguration:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:

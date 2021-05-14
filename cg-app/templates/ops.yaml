@@ -76,65 +76,6 @@ Resources:
       Principal: events.amazonaws.com
       SourceArn: !GetAtt CheckRedisUrlRule.Arn
 
-  RecordMetricsExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument: |
-        {
-          "Version": "2012-10-17",
-          "Statement": [{
-            "Effect": "Allow",
-            "Principal": {
-              "Service": [
-                "edgelambda.amazonaws.com",
-                "lambda.amazonaws.com"
-              ]
-            },
-            "Action": "sts:AssumeRole"
-          }]
-        }
-
-      ManagedPolicyArns:
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-cloudwatch-metrics"
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-get-parameter"
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-store-cloudwatch-logs"
-
-  RecordMetrics:
-    Type: AWS::Lambda::Function
-    Properties:
-      FunctionName: !Sub "restyled-${Environment}-record-metrics"
-      Description: |
-        Record metrics to CloudWatch every minute
-
-      Runtime: python3.8
-      Code:
-        S3Bucket: infra.restyled.io
-        S3Key: record-metrics.zip
-      Handler: main.handler
-      Timeout: 30
-      Environment:
-        Variables:
-          ENV: !Ref Environment
-      Role: !GetAtt RecordMetricsExecutionRole.Arn
-
-  RecordMetricsRule:
-    Type: AWS::Events::Rule
-    Properties:
-      Description: Record metrics every minute
-      ScheduleExpression: rate(1 minute)
-      State: "ENABLED"
-      Targets:
-        - Id: !Sub "restyled-${Environment}-record-metrics"
-          Arn: !GetAtt RecordMetrics.Arn
-
-  RecordMetricsPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref RecordMetrics
-      Action: lambda:InvokeFunction
-      Principal: events.amazonaws.com
-      SourceArn: !GetAtt RecordMetricsRule.Arn
-
   AlarmsTopic:
     Type: AWS::SNS::Topic
     Properties:

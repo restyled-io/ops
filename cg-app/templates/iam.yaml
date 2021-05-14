@@ -154,6 +154,8 @@ Resources:
         }
       ManagedPolicyArns:
         - !Ref LifecycleActionsPolicy
+        - !Ref MachinesSQSAccessPolicy
+        - !Ref SNSPublishPolicy
 
   MachinesInstanceRole:
     Type: AWS::IAM::Role

@@ -1,8 +1,10 @@
 StackName: prod-record-metrics
 Template: serverless.yaml
 Parameters:
+  - Name: Environment
+    Value: prod
   - Name: FunctionName
-    Value: record-metrics-v2
+    Value: record-metrics
   - Name: FunctionSourceKey
     Value: record-metrics.zip
   - Name: ScheduleExpression

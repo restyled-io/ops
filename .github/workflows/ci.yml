@@ -1,9 +1,20 @@
-name: Deploy cg-app
+name: CI
 
 on: push
 
 jobs:
-  deploy:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - run: pip install cfn-lint
+      - run: cfn-lint
+
+  sync:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    needs: [validate]
+
     runs-on: ubuntu-latest
 
     env:

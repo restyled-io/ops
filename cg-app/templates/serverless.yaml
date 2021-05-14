@@ -73,7 +73,6 @@ Resources:
   LambdaInvokePermission:
     Condition: HasLogInvocation
     Type: AWS::Lambda::Permission
-    DependsOn: LogForwarder
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref LambdaFunction

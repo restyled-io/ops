@@ -3,6 +3,7 @@ Template: serverless.yaml
 Parameters:
   - Name: Environment
     Value: prod
+
   - Name: FunctionName
     Value: global-log-forwarder
   - Name: FunctionSourceKey
@@ -11,8 +12,12 @@ Parameters:
     Value: nodejs10.x
   - Name: FunctionHandler
     Value: index.handler
+
   - Name: LogInvocation
     Value: "True"
+
+  - Name: Version
+    Value: 1
 Tags:
   - Key: Environment
     Value: prod

@@ -3,8 +3,6 @@ Template: ops.yaml
 Parameters:
   - Name: Environment
     Value: prod
-  - Name: QueueScaleUpThreshold
-    Value: 30
   - Name: QueueAlertThreshold
     Value: 200
 

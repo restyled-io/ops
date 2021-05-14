@@ -1,8 +1,6 @@
 Parameters:
   Environment:
     Type: String
-  QueueScaleUpThreshold:
-    Type: Number
   QueueAlertThreshold:
     Type: Number
 
@@ -23,46 +21,6 @@ Resources:
       Subscription:
         - Protocol: email
           Endpoint: alarms@restyled.io
-
-  QueueEmptyAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmActions:
-        - Fn::ImportValue: !Sub "${Environment}-machines-ScaleDownPolicy"
-        - Fn::ImportValue: !Sub "${Environment}-webhooks-ScaleDownPolicy"
-      AlarmDescription: !Sub "Restyled ${Environment} Queue is empty"
-      ComparisonOperator: LessThanOrEqualToThreshold
-      DatapointsToAlarm: 1
-      Dimensions:
-        - Name: Environment
-          Value: prod
-      EvaluationPeriods: 1
-      MetricName: QueueDepth
-      Namespace: Restyled
-      Period: 60
-      Statistic: Maximum
-      Threshold: 0
-      Unit: Count
-
-  QueueScaleUpAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmActions:
-        - Fn::ImportValue: !Sub "${Environment}-machines-ScaleUpPolicy"
-        - Fn::ImportValue: !Sub "${Environment}-webhooks-ScaleUpPolicy"
-      AlarmDescription: !Sub "Restyled ${Environment} Queue is at ScaleUp threshold"
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 1
-      Dimensions:
-        - Name: Environment
-          Value: prod
-      EvaluationPeriods: 1
-      MetricName: QueueDepth
-      Namespace: Restyled
-      Period: 60
-      Statistic: Minimum
-      Threshold: !Ref QueueScaleUpThreshold
-      Unit: Count
 
   QueueAlertAlarm:
     Type: AWS::CloudWatch::Alarm

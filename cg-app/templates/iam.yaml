@@ -86,6 +86,38 @@ Resources:
           }]
         }
 
+  SNSPublishPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: !Sub "Publish to any ${Environment} SNS Topic"
+      ManagedPolicyName: !Sub "restyled-${Environment}-sns-publish"
+      PolicyDocument: |
+        {
+           "Version": "2012-10-17",
+           "Statement": [{
+              "Effect": "Allow",
+              "Action": ["sns:Publish"],
+              "Resource": "*"
+           }]
+        }
+
+  MachinesSQSAccessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: !Sub "Full access to restyled-${Environment}-machines SQS"
+      ManagedPolicyName: !Sub "restyled-${Environment}-machines-sqs"
+      PolicyDocument: !Sub |
+        {
+           "Version": "2012-10-17",
+           "Statement": [{
+              "Effect": "Allow",
+              "Action": ["sqs:*"],
+              "Resource": [
+                "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${Environment}-machines-*"
+              ]
+           }]
+        }
+
   LifecycleActionsPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
@@ -100,6 +132,61 @@ Resources:
             "Resource": "*"
           }]
         }
+
+  MachinesAutoScalingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: !Sub "Auto-scaling Role for ${Environment}"
+      RoleName: !Sub "restyled-${Environment}-auto-scaling"
+      AssumeRolePolicyDocument: |
+        {
+          "Version": "2008-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "autoscaling.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        }
+      ManagedPolicyArns:
+        - !GetAtt LifecycleActionsPolicy.Arn
+
+  MachinesInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: !Sub "Auto-scaling Instance Role for ${Environment}"
+      RoleName: !Sub "restyled-${Environment}-machine"
+      AssumeRolePolicyDocument: |
+        {
+          "Version": "2008-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        }
+      ManagedPolicyArns:
+        - !GetAtt GetParameterPolicy.Arn
+        - !GetAtt LifecycleActionsPolicy.Arn
+        - !GetAtt MachinesSQSAccessPolicy.Arn
+        - !GetAtt SNSPublishPolicy.Arn
+        - !GetAtt StoreCloudWatchLogsPolicy.Arn
+
+  MachinesInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: !Sub "restyled-${Environment}-machine"
+      Roles:
+        - !Ref MachinesInstanceRole
 
   LambdaExecutionRole:
     Type: AWS::IAM::Role

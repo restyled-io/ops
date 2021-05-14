@@ -18,6 +18,9 @@ Parameters:
   FunctionTimeout:
     Type: Number
     Default: 30
+  FunctionRole:
+    Type: String
+    Default: "lambda-execution"
 
   ScheduleExpression:
     Type: String
@@ -49,7 +52,7 @@ Resources:
       Environment:
         Variables:
           ENV: !Ref Environment
-      Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/restyled-${Environment}-lambda-execution"
+      Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/restyled-${Environment}-${FunctionRole}"
 
   LambdaScheduleRule:
     Condition: HasScheduleExpression

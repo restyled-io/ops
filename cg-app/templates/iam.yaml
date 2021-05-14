@@ -86,6 +86,32 @@ Resources:
           }]
         }
 
+  EcsRunTaskPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: !Sub "Run tasks in ${Environment} ECS"
+      PolicyDocument: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": ["ecs:RunTask"],
+              "Resource": ["*"]
+            },
+            {
+              "Effect": "Allow",
+              "Action": "iam:PassRole",
+              "Resource": ["*"],
+              "Condition": {
+                "StringLike": {
+                  "iam:PassedToService": "ecs-tasks.amazonaws.com"
+                }
+              }
+            }
+          ]
+        }
+
   SNSPublishPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
@@ -132,6 +158,52 @@ Resources:
             "Resource": "*"
           }]
         }
+
+
+  EcsTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: !Sub "Execution Role for ${Environment} ECS"
+      RoleName: !Sub "restyled-${Environment}-ecs-execution"
+      AssumeRolePolicyDocument: |
+        {
+          "Version": "2008-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        }
+      ManagedPolicyArns:
+        - !Ref GetParameterPolicy
+        - !Ref StoreCloudWatchLogsPolicy
+
+  EcsEventsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: !Sub "Role for ${Environment} ECS Scheduled Tasks"
+      RoleName: !Sub "restyled-${Environment}-ecs-events"
+      AssumeRolePolicyDocument: |
+        {
+          "Version": "2008-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "events.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        }
+      ManagedPolicyArns:
+        - !Ref EcsRunTaskPolicy
 
   MachinesAutoScalingRole:
     Type: AWS::IAM::Role

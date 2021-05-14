@@ -153,7 +153,7 @@ Resources:
           ]
         }
       ManagedPolicyArns:
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/${LifecycleActionsPolicy}"
+        - !Ref LifecycleActionsPolicy
 
   MachinesInstanceRole:
     Type: AWS::IAM::Role
@@ -175,11 +175,11 @@ Resources:
           ]
         }
       ManagedPolicyArns:
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/${GetParameterPolicy}"
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/${LifecycleActionsPolicy}"
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/${MachinesSQSAccessPolicy}"
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/${SNSPublishPolicy}"
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/${StoreCloudWatchLogsPolicy}"
+        - !Ref GetParameterPolicy
+        - !Ref LifecycleActionsPolicy
+        - !Ref MachinesSQSAccessPolicy
+        - !Ref SNSPublishPolicy
+        - !Ref StoreCloudWatchLogsPolicy
 
   MachinesInstanceProfile:
     Type: AWS::IAM::InstanceProfile
@@ -209,9 +209,9 @@ Resources:
         }
 
       ManagedPolicyArns:
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-cloudwatch-metrics"
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-get-parameter"
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-store-cloudwatch-logs"
+        - !Ref CloudWatchMetricsPolicy
+        - !Ref GetParameterPolicy
+        - !Ref StoreCloudWatchLogsPolicy
 
   # Special-purpose, because it needs write to SSM
   CheckRedisUrlExecutionRole:
@@ -235,7 +235,7 @@ Resources:
         }
 
       ManagedPolicyArns:
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-cloudwatch-metrics"
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-get-parameter"
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-store-cloudwatch-logs"
-        - !Sub "arn:aws:iam::${AWS::AccountId}:policy/restyled-${Environment}-redis-url"
+        - !Ref CloudWatchMetricsPolicy
+        - !Ref GetParameterPolicy
+        - !Ref StoreCloudWatchLogsPolicy
+        - !Ref RedisUrlPolicy

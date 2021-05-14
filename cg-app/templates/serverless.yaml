@@ -30,7 +30,7 @@ Parameters:
     Default: "" # rate(1 minute)
 
 Conditions:
-  HasScheduleExpression: !Not [!Equal [!Ref ScheduleExpression, ""]]
+  HasScheduleExpression: !Not [!Equals [!Ref ScheduleExpression, ""]]
 
 Resources:
   LambdaFunction:

@@ -1,10 +1,18 @@
 Parameters:
   Environment:
     Type: String
-    Description: |
-      Environment name, e.g. "prod". Downstream Stacks will export VPCId and
-      SubnetIds to be exported using this name.
-    Default: prod
+  CidrBlock:
+    Type: String
+  Subnet1CidrBlock:
+    Type: String
+  Subnet2CidrBlock:
+    Type: String
+  Subnet3CidrBlock:
+    Type: String
+
+  Version:
+    Type: Number
+    Default: 0
 
 Outputs:
   VPCId:
@@ -31,7 +39,7 @@ Resources:
   VPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: 172.31.0.0/16
+      CidrBlock: !Ref CidrBlock
       InstanceTenancy: default
       EnableDnsSupport: true
       EnableDnsHostnames: true
@@ -63,7 +71,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       MapPublicIpOnLaunch: true
-      CidrBlock: 172.31.32.0/20
+      CidrBlock: !Ref Subnet1CidrBlock
       AvailabilityZone: !Sub "${AWS::Region}a"
       VpcId: !Ref VPC
   SubnetNetworkAclAssociation1:
@@ -80,7 +88,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       MapPublicIpOnLaunch: true
-      CidrBlock: 172.31.16.0/20
+      CidrBlock: !Ref Subnet2CidrBlock
       AvailabilityZone: !Sub "${AWS::Region}b"
       VpcId: !Ref VPC
   SubnetNetworkAclAssociation2:
@@ -97,7 +105,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       MapPublicIpOnLaunch: true
-      CidrBlock: 172.31.64.0/20
+      CidrBlock: !Ref Subnet3CidrBlock
       AvailabilityZone: !Sub "${AWS::Region}c"
       VpcId: !Ref VPC
   SubnetNetworkAclAssociation3:
@@ -128,7 +136,6 @@ Resources:
       DestinationCidrBlock: 0.0.0.0/0
       RouteTableId: !Ref RouteTable
       GatewayId: !Ref Gateway
-    DependsOn: Gateway
   DHCPOptions:
     Type: AWS::EC2::DHCPOptions
     Properties:

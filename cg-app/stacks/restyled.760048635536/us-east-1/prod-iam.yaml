@@ -4,7 +4,7 @@ Parameters:
   - Name: Environment
     Value: prod
   - Name: Version
-    Value: 6
+    Value: 7
 Tags:
   - Key: Environment
     Value: prod

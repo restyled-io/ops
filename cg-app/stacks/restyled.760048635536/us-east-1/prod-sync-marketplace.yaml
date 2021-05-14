@@ -21,6 +21,9 @@ Parameters:
   - Name: RestylerImage
     Value: restyled/restyler:88bfc25
 
+  - Name: Version
+    Value: 1
+
 Tags:
   - Key: Environment
     Value: prod

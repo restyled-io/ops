@@ -43,19 +43,13 @@ Resources:
       VpcId:
         Fn::ImportValue: !Sub "${Environment}-VPCId"
       SecurityGroupIngress:
-        - SourceSecurityGroupId:
-            Fn::ImportValue: !Sub "${Environment}-AppsSecurityGroupId"
-          IpProtocol: tcp
-          FromPort: 2376
-          ToPort: 2376
-
-        # Needed while the Heroku app is reading docker-ps
+        # Docker TLS
         - CidrIp: 0.0.0.0/0
           IpProtocol: tcp
           FromPort: 2376
           ToPort: 2376
 
-        # Needed while working on initial instance setup
+        # SSH
         - CidrIp: 0.0.0.0/0
           IpProtocol: tcp
           FromPort: 22

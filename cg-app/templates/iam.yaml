@@ -7,7 +7,6 @@ Resources:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       Description: !Sub "Get SSM Parameters under /restyled/${Environment}"
-      ManagedPolicyName: !Sub "restyled-${Environment}-get-parameter"
       PolicyDocument: !Sub |
         {
           "Version": "2012-10-17",
@@ -27,7 +26,6 @@ Resources:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       Description: !Sub "Full access to SSM Parameter /restyled/${Environment}/redis-url"
-      ManagedPolicyName: !Sub "restyled-${Environment}-redis-url"
       PolicyDocument: !Sub |
         {
           "Version": "2012-10-17",
@@ -44,7 +42,6 @@ Resources:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       Description: Store CloudWatch Logs
-      ManagedPolicyName: !Sub "restyled-${Environment}-store-cloudwatch-logs"
       PolicyDocument: |
         {
           "Version": "2012-10-17",
@@ -65,7 +62,6 @@ Resources:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       Description: Full access to CloudWatch Metrics
-      ManagedPolicyName: !Sub "restyled-${Environment}-cloudwatch-metrics"
       PolicyDocument: |
         {
           "Version": "2012-10-17",
@@ -110,7 +106,6 @@ Resources:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       Description: !Sub "Publish to any ${Environment} SNS Topic"
-      ManagedPolicyName: !Sub "restyled-${Environment}-sns-publish"
       PolicyDocument: |
         {
            "Version": "2012-10-17",
@@ -125,7 +120,6 @@ Resources:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       Description: !Sub "Full access to restyled-${Environment}-machines SQS"
-      ManagedPolicyName: !Sub "restyled-${Environment}-machines-sqs"
       PolicyDocument: !Sub |
         {
            "Version": "2012-10-17",
@@ -142,7 +136,6 @@ Resources:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       Description: Completing ASG Lifecycle actions
-      ManagedPolicyName: !Sub "restyled-${Environment}-complete-lifecycle-action"
       PolicyDocument: |
         {
           "Version": "2012-10-17",

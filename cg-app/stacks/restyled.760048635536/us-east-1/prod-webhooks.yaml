@@ -3,18 +3,12 @@ Template: fargate-backend.yaml
 Parameters:
   - Name: Environment
     Value: prod
-
   - Name: Name
     Value: webhooks
-
   - Name: Subcommand
     Value: webhooks
-
-  # App settings
   - Name: Approot
     Value: https://restyled.io
-
-  # Service settings
   - Name: ServiceName
     Value: Webhooks
   - Name: ServiceDesiredCount
@@ -25,18 +19,14 @@ Parameters:
     Value: 30
   - Name: ServiceScaleMetric
     Value: QueueDepth
-
-  # App versions
   - Name: RestyledImage
     Value: restyled/restyled.io:264410b
   - Name: RestylerImage
     Value: restyled/restyler:88bfc25
-
-  - Name: Version
-    Value: 1
-
 Tags:
   - Key: Environment
     Value: prod
   - Key: App
     Value: webhooks
+
+# Increment to deploy template-only changes: v0

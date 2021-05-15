@@ -10,10 +10,6 @@ Parameters:
   Subnet3CidrBlock:
     Type: String
 
-  Version:
-    Type: Number
-    Default: 0
-
 Outputs:
   VPCId:
     Description: VPC Id
@@ -30,10 +26,6 @@ Outputs:
         - !Ref Subnet3
     Export:
       Name: !Sub "${Environment}-SubnetIds"
-
-  Version:
-    Description: "Template version"
-    Value: !Ref Version
 
 Resources:
   VPC:

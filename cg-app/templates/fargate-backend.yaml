@@ -45,15 +45,6 @@ Parameters:
     Type: String
     Default: ""
 
-  Version:
-    Type: Number
-    Default: 0
-
-Outputs:
-  Version:
-    Description: "Template version"
-    Value: !Ref Version
-
 Conditions:
   HasService: !Not [!Equals ["", !Ref ServiceName]]
   HasScheduleExpression: !Not [!Equals ["", !Ref ScheduleExpression]]

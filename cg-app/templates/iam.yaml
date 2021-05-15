@@ -2,15 +2,6 @@ Parameters:
   Environment:
     Type: String
 
-  Version:
-    Type: Number
-    Default: 0
-
-Outputs:
-  Version:
-    Description: "Template version"
-    Value: !Ref Version
-
 Resources:
   GetParameterPolicy:
     Type: AWS::IAM::ManagedPolicy

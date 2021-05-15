@@ -3,8 +3,8 @@ Template: iam.yaml
 Parameters:
   - Name: Environment
     Value: prod
-  - Name: Version
-    Value: 7
 Tags:
   - Key: Environment
     Value: prod
+
+# Increment to deploy template-only changes: v0

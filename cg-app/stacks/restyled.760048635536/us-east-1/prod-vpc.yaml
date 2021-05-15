@@ -1,6 +1,5 @@
 StackName: prod-vpc
 Template: vpc.yaml
-
 Parameters:
   - Name: Environment
     Value: prod
@@ -12,11 +11,8 @@ Parameters:
     Value: 172.31.16.0/20
   - Name: Subnet3CidrBlock
     Value: 172.31.64.0/20
-
-  # Incremented when we need to deploy template-only changes
-  - Name: Version
-    Value: 0
-
 Tags:
   - Key: Environment
     Value: prod
+
+# Increment to deploy template-only changes: v0

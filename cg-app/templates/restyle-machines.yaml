@@ -26,15 +26,6 @@ Parameters:
   ScaleUpCapacity:
     Type: Number
 
-  Version:
-    Type: Number
-    Default: 0
-
-Outputs:
-  Version:
-    Description: "Template version"
-    Value: !Ref Version
-
 Resources:
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup

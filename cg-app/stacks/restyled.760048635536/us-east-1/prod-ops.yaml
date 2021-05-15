@@ -5,7 +5,8 @@ Parameters:
     Value: prod
   - Name: QueueAlertThreshold
     Value: 200
+Tags:
+  - Key: Environment
+    Value: prod
 
-  # Increment to deploy a template-only change
-  - Name: Version
-    Value: 6
+# Increment to deploy template-only changes: v0

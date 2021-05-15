@@ -5,27 +5,20 @@ Parameters:
     Value: prod
   - Name: Name
     Value: sync-marketplace
-
-  # App settings
   - Name: Subcommand
     Value: sync-marketplace
   - Name: Approot
     Value: https://restyled.io
-
   - Name: ScheduleExpression
     Value: rate(5 minutes)
-
-  # App versions
   - Name: RestyledImage
     Value: restyled/restyled.io:264410b
   - Name: RestylerImage
     Value: restyled/restyler:88bfc25
-
-  - Name: Version
-    Value: 1
-
 Tags:
   - Key: Environment
     Value: prod
   - Key: App
     Value: sync-marketplace
+
+# Increment to deploy template-only changes: v0

@@ -4,15 +4,6 @@ Parameters:
   QueueAlertThreshold:
     Type: Number
 
-  Version:
-    Type: Number
-    Default: 0
-
-Outputs:
-  Version:
-    Description: "Template version"
-    Value: !Ref Version
-
 Resources:
   AlarmsTopic:
     Type: AWS::SNS::Topic

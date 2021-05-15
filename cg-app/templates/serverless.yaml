@@ -30,15 +30,6 @@ Parameters:
     Type: String
     Default: ""
 
-  Version:
-    Type: Number
-    Default: 0
-
-Outputs:
-  Version:
-    Description: "Template version"
-    Value: !Ref Version
-
 Conditions:
   HasLogInvocation: !Equals [!Ref LogInvocation, "True"]
   HasScheduleExpression: !Not [!Equals [!Ref ScheduleExpression, ""]]

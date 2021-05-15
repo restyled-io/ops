@@ -1,7 +1,6 @@
 StackName: prod-machines
 Template: restyle-machines.yaml
 Parameters:
-  # Rarely changed
   - Name: Environment
     Value: prod
   - Name: InstanceAmi
@@ -10,25 +9,18 @@ Parameters:
     Value: patrick@leo
   - Name: RestyledHost
     Value: https://restyled.io
-
-  # Settings
   - Name: DesiredCapacity
     Value: 1
   - Name: ScaleUpThreshold
     Value: 30
   - Name: ScaleUpCapacity
     Value: 6
-
-  # Versions
   - Name: AgentVersion
     Value: 1.1.0
   - Name: UserDataVersion
     Value: 1.0.2
-
-  # Increment to deploy a template-only change
-  - Name: Version
-    Value: 4
-
 Tags:
   - Key: Environment
     Value: prod
+
+# Increment to deploy template-only changes: v0

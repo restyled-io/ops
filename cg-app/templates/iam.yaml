@@ -146,7 +146,6 @@ Resources:
           }]
         }
 
-
   EcsTaskExecutionRole:
     Type: AWS::IAM::Role
     Properties:

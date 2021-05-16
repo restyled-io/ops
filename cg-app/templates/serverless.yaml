@@ -50,6 +50,13 @@ Resources:
           ENV: !Ref Environment
       Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/restyled-${Environment}-${FunctionRole}"
 
+  LogGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:restyled-${Environment}-global-log-forwarder"
+      LogGroupName: !Sub "/aws/lambda/restyled-${Environment}-${FunctionName}"
+      FilterPattern: ""
+
   LambdaScheduleRule:
     Condition: HasScheduleExpression
     Type: AWS::Events::Rule

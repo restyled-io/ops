@@ -11,6 +11,8 @@ Parameters:
     Value: nodejs10.x
   - Name: FunctionHandler
     Value: index.handler
+  - Name: LogForwarding
+    Value: "False"
   - Name: LogInvocation
     Value: "True"
 Tags:

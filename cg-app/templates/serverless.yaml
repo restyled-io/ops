@@ -22,6 +22,10 @@ Parameters:
     Type: String
     Default: "lambda-execution"
 
+  LogForwarding:
+    Type: String
+    AllowedValues: ["True", "False"]
+    Default: "True"
   LogInvocation:
     Type: String
     AllowedValues: ["True", "False"]
@@ -31,6 +35,7 @@ Parameters:
     Default: ""
 
 Conditions:
+  HasLogForwarding: !Equals [!Ref LogForwarding, "True"]
   HasLogInvocation: !Equals [!Ref LogInvocation, "True"]
   HasScheduleExpression: !Not [!Equals [!Ref ScheduleExpression, ""]]
 
@@ -51,6 +56,7 @@ Resources:
       Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/restyled-${Environment}-${FunctionRole}"
 
   LogGroupSubscription:
+    Condition: HasLogForwarding
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:restyled-${Environment}-global-log-forwarder"

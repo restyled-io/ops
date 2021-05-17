@@ -9,8 +9,7 @@
   "scripts": {
     "test": "jest",
     "dist": "rm -rf dist/* && mkdir -p dist/ && cp index.js dist/ && yarn install --production --modules-folder dist/node_modules && (cd dist && zip -r lambda.zip .)",
-    "s3.cp": "aws --profile restyled s3 cp --acl public-read dist/lambda.zip s3://infra.restyled.io/logdna-cloudwatch.zip",
-    "release.prod": "aws --profile restyled lambda update-function-code --function-name restyled-prod-logdna-cloudwatch --zip-file fileb://dist/lambda.zip"
+    "s3.cp": "aws --profile restyled s3 cp --acl public-read dist/lambda.zip s3://infra.restyled.io/src/logdna-cloudwatch/v1.zip"
   },
   "dependencies": {
     "aws-sdk": "^2.724.0",

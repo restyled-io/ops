@@ -297,15 +297,15 @@ Resources:
       Policies:
         - PolicyName: restyled-redis-url
           PolicyDocument: !Sub |
-        {
-          "Version": "2012-10-17",
-          "Statement": [
             {
-              "Effect": "Allow",
-              "Action": "ssm:*",
-              "Resource": [
-                "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/restyled/*/redis-url"
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "ssm:*",
+                  "Resource": [
+                    "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/restyled/*/redis-url"
+                  ]
+                }
               ]
             }
-          ]
-        }

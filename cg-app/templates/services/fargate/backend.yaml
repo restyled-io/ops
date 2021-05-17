@@ -217,7 +217,7 @@ Resources:
   LogGroupSubscription:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
-        DestinationArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:restyled-${Environment}-global-log-forwarder"
+        DestinationArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:restyled-forward-logs"
         LogGroupName: !Ref LogGroup
         FilterPattern: ""
 

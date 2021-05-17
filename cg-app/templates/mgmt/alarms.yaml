@@ -1,7 +1,13 @@
 Parameters:
   Environment:
     Type: String
-  QueueAlertThreshold:
+  QueueDepthThreshold:
+    Type: Number
+  QueueDepthPeriod:
+    Type: Number
+  UnknownFailuresThreshold:
+    Type: Number
+  UnknownFailuresPeriod:
     Type: Number
 
 Resources:
@@ -13,7 +19,7 @@ Resources:
         - Protocol: email
           Endpoint: alarms@restyled.io
 
-  QueueAlertAlarm:
+  QueueDepthAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions:
@@ -29,7 +35,7 @@ Resources:
       EvaluationPeriods: 2
       MetricName: QueueDepth
       Namespace: Restyled
-      Period: 120
+      Period: !Ref QueueDepthPeriod
       Statistic: Minimum
       Threshold: !Ref QueueAlertThreshold
       TreatMissingData: breaching
@@ -51,8 +57,8 @@ Resources:
       EvaluationPeriods: 1
       MetricName: JobsFailedUnknown
       Namespace: Restyled
-      Period: 60
+      Period: !Ref UnknownFailuresPeriod
       Statistic: Minimum
-      Threshold: 5
+      Threshold: !Ref UnknownFailuresThreshold
       TreatMissingData: breaching
       Unit: Count

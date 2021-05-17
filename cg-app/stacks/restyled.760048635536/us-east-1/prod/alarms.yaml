@@ -1,0 +1,19 @@
+Template: mgmt/alarms.yaml
+
+Tags:
+  - Key: Environment
+    Value: prod
+
+Parameters:
+  - Name: Environment
+    Value: prod
+  - Name: QueueDepthThreshold
+    Value: 200
+  - Name: QueueDepthPeriod
+    Value: 120
+  - Name: UnknownFailuresThreshold
+    Value: 5
+  - Name: UnknownFailuresPeriod
+    Value: 60
+
+# Increment to deploy template-only changes: v0

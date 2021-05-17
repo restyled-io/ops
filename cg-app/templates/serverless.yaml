@@ -50,12 +50,20 @@ Resources:
       Timeout: !Ref FunctionTimeout
       Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/restyled-${FunctionRole}"
 
+  # Would be created on-demand, but let's create it eagerly so that we can raise
+  # this Stack from scratch with the Subscription.
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${LambdaFunction}"
+      RetentionInDays: 7
+
   LogGroupSubscription:
     Condition: HasLogForwarding
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:restyled-forward-logs"
-      LogGroupName: !Sub "/aws/lambda/restyled-${FunctionName}"
+      LogGroupName: !Ref LogGroup
       FilterPattern: ""
 
   LambdaScheduleRule:

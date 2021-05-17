@@ -1,10 +1,8 @@
-StackName: prod-check-redis-url
 Template: serverless.yaml
+
 Parameters:
-  - Name: Environment
-    Value: prod
   - Name: FunctionName
-    Value: check-redis
+    Value: check-redis-url
   - Name: FunctionSourceKey
     Value: src/check-redis-url/8dfc497553e5a65802a6c1b8fb3d5659822ffdc5.zip
   - Name: FunctionRuntime
@@ -14,9 +12,6 @@ Parameters:
   - Name: FunctionRole
     Value: check-redis-url
   - Name: ScheduleExpression
-    Value: rate(2 minutes)
-Tags:
-  - Key: Environment
-    Value: prod
+    Value: rate(10 minutes)
 
-# Increment to deploy template-only changes: v1
+# Increment to deploy template-only changes: v0

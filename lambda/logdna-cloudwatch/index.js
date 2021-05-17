@@ -15,20 +15,26 @@ const ssmGetParameterValue = async (name) => {
   });
 };
 
-const ENV = process.env.ENV || "dev";
-
 const prepareLogs = (event) => {
   const eventData = JSON.parse(
     zlib.unzipSync(Buffer.from(event.awslogs.data, "base64"))
   );
 
   const lines = eventData.logEvents.map((event) => {
+    const parts = eventData.logStream.split("/");
+    const env =
+      parts.length === 3 && parts[0] === "restyled" ? parts[1] : "unknown";
+    const app =
+      parts.length === 3 && parts[0] === "restyled"
+        ? parts[2]
+        : eventData.logGroup;
+
     const parsed = parseLevel(event.message);
 
     return {
       timestamp: event.timestamp,
-      env: ENV,
-      app: eventData.logGroup,
+      env,
+      app,
       file: eventData.logStream,
       level: parsed ? parsed.level : null,
       line: parsed ? parsed.message : event.message,
@@ -65,7 +71,7 @@ const request_ = async (options) => {
 };
 
 exports.handler = async (event) => {
-  const logDNAKey = await ssmGetParameterValue(`/restyled/${ENV}/logdna-key`);
+  const logDNAKey = await ssmGetParameterValue("/restyled/logdna-key");
   const lines = prepareLogs(event);
   const { response, body } = await request_({
     url: "https://logs.logdna.com/logs/ingest",

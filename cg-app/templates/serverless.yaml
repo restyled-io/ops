@@ -55,7 +55,7 @@ Resources:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:restyled-forward-logs"
-      LogGroupName: !Sub "/aws/lambda/${LambdaFunction}"
+      LogGroupName: !Sub "/aws/lambda/restyled-${FunctionName}"
       FilterPattern: ""
 
   LambdaScheduleRule:

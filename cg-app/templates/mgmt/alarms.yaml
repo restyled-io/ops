@@ -37,7 +37,7 @@ Resources:
       Namespace: Restyled
       Period: !Ref QueueDepthPeriod
       Statistic: Minimum
-      Threshold: !Ref QueueAlertThreshold
+      Threshold: !Ref QueueDepthThreshold
       TreatMissingData: breaching
       Unit: Count
 

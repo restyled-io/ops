@@ -4,7 +4,7 @@ Parameters:
   - Name: FunctionName
     Value: check-redis-url
   - Name: FunctionSourceKey
-    Value: src/check-redis-url/8dfc497553e5a65802a6c1b8fb3d5659822ffdc5.zip
+    Value: src/check-redis-url/b9e1e0270a208d56cb5a4c35698bec6177f55b02.zip
   - Name: FunctionRuntime
     Value: nodejs10.x
   - Name: FunctionHandler

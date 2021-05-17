@@ -1,14 +1,6 @@
 Parameters:
   Environment:
     Type: String
-  CidrBlock:
-    Type: String
-  Subnet1CidrBlock:
-    Type: String
-  Subnet2CidrBlock:
-    Type: String
-  Subnet3CidrBlock:
-    Type: String
 
 Outputs:
   VPCId:
@@ -31,13 +23,11 @@ Resources:
   VPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: !Ref CidrBlock
+      CidrBlock: 172.31.0.0/16
       InstanceTenancy: default
       EnableDnsSupport: true
       EnableDnsHostnames: true
-      Tags:
-        - Key: Name
-          Value: !Sub "VPC-${Environment}"
+
   NetworkAcl:
     Type: AWS::EC2::NetworkAcl
     Properties:
@@ -59,11 +49,12 @@ Resources:
       RuleAction: allow
       RuleNumber: 100
       NetworkAclId: !Ref NetworkAcl
+
   Subnet1:
     Type: AWS::EC2::Subnet
     Properties:
       MapPublicIpOnLaunch: true
-      CidrBlock: !Ref Subnet1CidrBlock
+      CidrBlock: 172.31.32.0/20
       AvailabilityZone: !Sub "${AWS::Region}a"
       VpcId: !Ref VPC
   SubnetNetworkAclAssociation1:
@@ -76,11 +67,12 @@ Resources:
     Properties:
       RouteTableId: !Ref RouteTable
       SubnetId: !Ref Subnet1
+
   Subnet2:
     Type: AWS::EC2::Subnet
     Properties:
       MapPublicIpOnLaunch: true
-      CidrBlock: !Ref Subnet2CidrBlock
+      CidrBlock: 172.31.16.0/20
       AvailabilityZone: !Sub "${AWS::Region}b"
       VpcId: !Ref VPC
   SubnetNetworkAclAssociation2:
@@ -93,11 +85,12 @@ Resources:
     Properties:
       RouteTableId: !Ref RouteTable
       SubnetId: !Ref Subnet2
+
   Subnet3:
     Type: AWS::EC2::Subnet
     Properties:
       MapPublicIpOnLaunch: true
-      CidrBlock: !Ref Subnet3CidrBlock
+      CidrBlock: 172.31.64.0/20
       AvailabilityZone: !Sub "${AWS::Region}c"
       VpcId: !Ref VPC
   SubnetNetworkAclAssociation3:
@@ -110,6 +103,7 @@ Resources:
     Properties:
       RouteTableId: !Ref RouteTable
       SubnetId: !Ref Subnet3
+
   Gateway:
     Type: AWS::EC2::InternetGateway
     Properties: {}
@@ -118,6 +112,7 @@ Resources:
     Properties:
       VpcId: !Ref VPC
       InternetGatewayId: !Ref Gateway
+
   RouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -128,6 +123,7 @@ Resources:
       DestinationCidrBlock: 0.0.0.0/0
       RouteTableId: !Ref RouteTable
       GatewayId: !Ref Gateway
+
   DHCPOptions:
     Type: AWS::EC2::DHCPOptions
     Properties:

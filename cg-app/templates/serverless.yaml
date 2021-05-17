@@ -1,6 +1,4 @@
 Parameters:
-  Environment:
-    Type: String
   FunctionName:
     Type: String
   FunctionSourceKey:
@@ -43,35 +41,32 @@ Resources:
   LambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub "restyled-${Environment}-${FunctionName}"
+      FunctionName: !Sub "restyled-${FunctionName}"
       Runtime: !Ref FunctionRuntime
       Code:
         S3Bucket: !Ref FunctionSourceBucket
         S3Key: !Ref FunctionSourceKey
       Handler: !Ref FunctionHandler
       Timeout: !Ref FunctionTimeout
-      Environment:
-        Variables:
-          ENV: !Ref Environment
       Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/restyled-${FunctionRole}"
 
   LogGroupSubscription:
     Condition: HasLogForwarding
     Type: AWS::Logs::SubscriptionFilter
     Properties:
-      DestinationArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:restyled-${Environment}-global-log-forwarder"
-      LogGroupName: !Sub "/aws/lambda/restyled-${Environment}-${FunctionName}"
+      DestinationArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:restyled-forward-logs"
+      LogGroupName: !Sub "/aws/lambda/${LambdaFunction}"
       FilterPattern: ""
 
   LambdaScheduleRule:
     Condition: HasScheduleExpression
     Type: AWS::Events::Rule
     Properties:
-      Description: !Sub "Trigger restyled-${Environment}-${FunctionName}"
+      Description: !Sub "Trigger restyled-${LambdaFunction}"
       ScheduleExpression: !Ref ScheduleExpression
       State: "ENABLED"
       Targets:
-        - Id: !Sub "restyled-${Environment}-${FunctionName}"
+        - Id: !Ref LambdaFunction
           Arn: !GetAtt LambdaFunction.Arn
 
   LambdaInvokePermission:

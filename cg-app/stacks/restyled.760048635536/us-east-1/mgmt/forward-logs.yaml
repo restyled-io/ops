@@ -1,0 +1,17 @@
+Template: serverless.yaml
+
+Parameters:
+  - Name: FunctionName
+    Value: forward-logs
+  - Name: FunctionSourceKey
+    Value: logdna-cloudwatch.zip
+  - Name: FunctionRuntime
+    Value: nodejs10.x
+  - Name: FunctionHandler
+    Value: index.handler
+  - Name: LogForwarding
+    Value: "False"
+  - Name: LogInvocation
+    Value: "True"
+
+# Increment to deploy template-only changes: v0

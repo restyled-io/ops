@@ -1,4 +1,4 @@
-Template: ec2/asg.yaml
+Template: services/ec2/asg.yaml
 
 Tags:
   - Key: Environment

@@ -30,4 +30,4 @@ Parameters:
   - Name: RestylerImage
     Value: restyled/restyler:88bfc25
 
-# Increment to deploy template-only changes: v0
+# Increment to deploy template-only changes: v1

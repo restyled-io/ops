@@ -1,0 +1,311 @@
+Resources:
+  GetParametersPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Get SSM Parameters
+      PolicyDocument: !Sub |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "ssm:GetParameters",
+                "ssm:GetParameter"
+              ],
+              "Resource": [
+                "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/restyled/*"
+              ]
+            }
+          ]
+        }
+
+  StoreCloudWatchLogsPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Store CloudWatch Logs
+      PolicyDocument: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            }
+          ]
+        }
+
+  CloudWatchMetricsPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Full access to CloudWatch Metrics
+      PolicyDocument: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "cloudwatch:ListMetrics",
+                "cloudwatch:GetMetric*",
+                "cloudwatch:PutMetric*"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+
+  EcsRunTaskPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Run tasks in ECS
+      PolicyDocument: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": "ecs:RunTask",
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": "iam:PassRole",
+              "Resource": "*",
+              "Condition": {
+                "StringLike": {
+                  "iam:PassedToService": "ecs-tasks.amazonaws.com"
+                }
+              }
+            }
+          ]
+        }
+
+  SNSPublishPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Publish to any SNS Topic
+      PolicyDocument: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": "sns:Publish",
+              "Resource": "*"
+            }
+          ]
+        }
+
+  SQSAccessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Full access to any SQS Queue
+      PolicyDocument: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": "sqs:*",
+              "Resource": "*"
+            }
+          ]
+        }
+
+  LifecycleActionsPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Complete ASG Lifecycle actions
+      PolicyDocument: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": "autoscaling:CompleteLifecycleAction",
+              "Resource": "*"
+            }
+          ]
+        }
+
+  EcsTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: restyled-ecs-execution
+      Description: Execution Role for ECS
+      AssumeRolePolicyDocument: |
+        {
+          "Version": "2008-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        }
+      ManagedPolicyArns:
+        - !Ref GetParametersPolicy
+        - !Ref StoreCloudWatchLogsPolicy
+
+  EcsEventsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: restyled-ecs-events
+      Description: Role for ECS Events
+      AssumeRolePolicyDocument: |
+        {
+          "Version": "2008-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "events.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        }
+      ManagedPolicyArns:
+        - !Ref EcsRunTaskPolicy
+
+  EC2AutoScalingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: restyled-ec2-autoscaling
+      Description: Auto-scaling Role
+      AssumeRolePolicyDocument: |
+        {
+          "Version": "2008-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "autoscaling.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        }
+      ManagedPolicyArns:
+        - !Ref LifecycleActionsPolicy
+        - !Ref SNSPublishPolicy
+        - !Ref SQSAccessPolicy
+
+  EC2InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: restyled-ec2-instance
+      Description: EC2 Instance Role
+      AssumeRolePolicyDocument: |
+        {
+          "Version": "2008-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        }
+      ManagedPolicyArns:
+        - !Ref GetParametersPolicy
+        - !Ref LifecycleActionsPolicy
+        - !Ref SNSPublishPolicy
+        - !Ref SQSAccessPolicy
+        - !Ref StoreCloudWatchLogsPolicy
+
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: restyled-ec2-instance
+      Roles:
+        - !Ref EC2InstanceRole
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: restyled-lambda-execution
+      Description: Execution role for Lambdas
+      AssumeRolePolicyDocument: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "edgelambda.amazonaws.com",
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        }
+
+      ManagedPolicyArns:
+        - !Ref CloudWatchMetricsPolicy
+        - !Ref GetParametersPolicy
+        - !Ref StoreCloudWatchLogsPolicy
+
+  ##############################################################################
+  # One-off Roles with special permissions
+  ##############################################################################
+
+  CheckRedisUrlExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Execution role for check-redis-url
+      RoleName: restyled-check-redis-url
+      AssumeRolePolicyDocument: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "edgelambda.amazonaws.com",
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        }
+      ManagedPolicyArns:
+        - !Ref CloudWatchMetricsPolicy
+        - !Ref GetParametersPolicy
+        - !Ref StoreCloudWatchLogsPolicy
+      Policies:
+        - PolicyName: restyled-redis-url
+          PolicyDocument: !Sub |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": "ssm:*",
+              "Resource": [
+                "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/restyled/*/redis-url"
+              ]
+            }
+          ]
+        }

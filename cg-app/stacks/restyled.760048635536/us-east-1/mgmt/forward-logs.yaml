@@ -4,7 +4,7 @@ Parameters:
   - Name: FunctionName
     Value: forward-logs
   - Name: FunctionSourceKey
-    Value: logdna-cloudwatch.zip
+    Value: src/logdna-cloudwatch/v1.zip
   - Name: FunctionRuntime
     Value: nodejs10.x
   - Name: FunctionHandler

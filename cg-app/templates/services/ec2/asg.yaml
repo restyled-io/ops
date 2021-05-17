@@ -2,22 +2,16 @@ Parameters:
   Environment:
     Type: String
 
-  InstanceAmi:
-    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
-
-  InstanceKeyPair:
+  Name:
     Type: String
 
-  RestyledHost:
+  UserDataSourceKey:
     Type: String
 
   DesiredCapacity:
     Type: Number
 
-  UserDataVersion:
-    Type: String
-
-  AgentVersion:
+  ScaleUpMetric:
     Type: String
 
   ScaleUpThreshold:
@@ -26,11 +20,29 @@ Parameters:
   ScaleUpCapacity:
     Type: Number
 
+  InstanceAmi:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id
+
+  InstanceKeyPair:
+    Type: String
+    Default: patrick@leo
+
+  # TODO: Embed this in user-data
+  AgentVersion:
+    Type: String
+    Default: 1.1.0
+
+  # TODO: Work this out by ENV, within user-data
+  RestyledHost:
+    Type: String
+    Default: https://restyled.io
+
 Resources:
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: !Sub "${Environment}-machines Security Group"
+      GroupDescription: !Sub "${Environment}-${Name} Security Group"
       VpcId:
         Fn::ImportValue: !Sub "${Environment}-VPCId"
       SecurityGroupIngress:
@@ -55,13 +67,13 @@ Resources:
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "restyled/${Environment}/machines"
+      LogGroupName: !Sub "restyled/${Environment}/${Name}"
       RetentionInDays: 7
 
   LogGroupSubscription:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
-        DestinationArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:restyled-${Environment}-global-log-forwarder"
+        DestinationArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:restyled-forward-logs"
         LogGroupName: !Ref LogGroup
         FilterPattern: ""
 
@@ -85,19 +97,21 @@ Resources:
           echo "Installing tooling required for setup"
           sudo yum install -y awscli jq
 
-          echo "Pulling machines-${Environment} user-data"
-          aws s3 cp "s3://infra.restyled.io/machines/${Environment}/user-data-v${UserDataVersion}" ./user-data
+          echo "Pulling user-data from ${UserDataSourceKey}..."
+          aws s3 cp "s3://infra.restyled.io/${UserDataSourceKey}" ./user-data
           chmod +x ./user-data
 
+          export ENV=${Environment}
+          export LIFECYCLE_HOOKS_URL=${LifecycleHooksQueue}
+          export LOG_GROUP=${LogGroup}
+          export REGION=${AWS::Region}
+
+          # TODO: See Parameters comments
+          export AGENT_VERSION=${AgentVersion}
+          export RESTYLED_API_HOST=${RestyledHost}
+
           echo "Executing user-data"
-          env \
-            "AGENT_VERSION=${AgentVersion}" \
-            "ENV=${Environment}" \
-            "LIFECYCLE_HOOKS_URL=${LifecycleHooksQueue}" \
-            "LOG_GROUP=${LogGroup}" \
-            "REGION=${AWS::Region}" \
-            "RESTYLED_API_HOST=${RestyledHost}" \
-            ./user-data
+          ./user-data
 
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
@@ -112,11 +126,11 @@ Resources:
         MetricsCollection:
           - Granularity: 1Minute
         LifecycleHookSpecificationList:
-          - LifecycleHookName: !Sub "restyled-machine-${Environment}-launching"
+          - LifecycleHookName: !Sub "restyled-${Environment}-${Name}-launching"
             LifecycleTransition: autoscaling:EC2_INSTANCE_LAUNCHING
             NotificationTargetARN: !GetAtt LifecycleHooksQueue.Arn
             RoleARN: !Sub "arn:aws:iam::${AWS::AccountId}:role/restyled-ec2-autoscaling"
-          - LifecycleHookName: !Sub "restyled-machine-${Environment}-terminating"
+          - LifecycleHookName: !Sub "restyled-${Environment}-${Name}-terminating"
             LifecycleTransition: autoscaling:EC2_INSTANCE_TERMINATING
             NotificationTargetARN: !GetAtt LifecycleHooksQueue.Arn
             RoleARN: !Sub "arn:aws:iam::${AWS::AccountId}:role/restyled-ec2-autoscaling"
@@ -138,14 +152,14 @@ Resources:
     Properties:
       AlarmActions:
         - !Ref ScaleUpPolicy
-      AlarmDescription: !Sub "Scale up restyled-${Environment}-machines"
+      AlarmDescription: !Sub "Scale up restyled-${Environment}-${Name}"
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
       Dimensions:
         - Name: Environment
           Value: !Ref Environment
       EvaluationPeriods: 1
-      MetricName: QueueDepth
+      MetricName: !Ref ScaleUpMetric
       Namespace: Restyled
       Period: 60
       Statistic: Minimum
@@ -165,14 +179,14 @@ Resources:
     Properties:
       AlarmActions:
         - !Ref ScaleDownPolicy
-      AlarmDescription: !Sub "Scale down restyled-${Environment}-machines"
+      AlarmDescription: !Sub "Scale down restyled-${Environment}-${Name}"
       ComparisonOperator: LessThanOrEqualToThreshold
       DatapointsToAlarm: 1
       Dimensions:
         - Name: Environment
           Value: !Ref Environment
       EvaluationPeriods: 1
-      MetricName: QueueDepth
+      MetricName: !Ref ScaleUpMetric
       Namespace: Restyled
       Period: 60
       Statistic: Maximum

@@ -28,11 +28,16 @@ Parameters:
     Type: String
     AllowedValues: ["True", "False"]
     Default: "False"
+  LogGroupExists:
+    Type: String
+    AllowedValues: ["True", "False"]
+    Default: "False"
   ScheduleExpression:
     Type: String
     Default: ""
 
 Conditions:
+  CreateLogGroup: !Not [!Equals [!Ref LogGroupExists, "True"]]
   HasLogForwarding: !Equals [!Ref LogForwarding, "True"]
   HasLogInvocation: !Equals [!Ref LogInvocation, "True"]
   HasScheduleExpression: !Not [!Equals [!Ref ScheduleExpression, ""]]
@@ -50,9 +55,11 @@ Resources:
       Timeout: !Ref FunctionTimeout
       Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/restyled-${FunctionRole}"
 
-  # Would be created on-demand, but let's create it eagerly so that we can raise
-  # this Stack from scratch with the Subscription.
+  # Typically created on-demand, but needs to be created eagerly if standing up
+  # the Stack from scratch with the Subscription. When *not* standing up from
+  # scratch we *can't* create it, or we'll fail.
   LogGroup:
+    Condition: CreateLogGroup
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/${LambdaFunction}"

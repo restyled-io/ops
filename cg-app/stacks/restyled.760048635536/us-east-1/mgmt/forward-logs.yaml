@@ -13,5 +13,7 @@ Parameters:
     Value: "False"
   - Name: LogInvocation
     Value: "True"
+  - Name: LogGroupExists
+    Value: "True"
 
 # Increment to deploy template-only changes: v0

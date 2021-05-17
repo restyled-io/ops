@@ -1,0 +1,11 @@
+Template: serverless.yaml
+
+Parameters:
+  - Name: FunctionName
+    Value: record-metrics
+  - Name: FunctionSourceKey
+    Value: record-metrics.zip
+  - Name: ScheduleExpression
+    Value: rate(1 minute)
+
+# Increment to deploy template-only changes: v0

@@ -14,4 +14,4 @@ Parameters:
   - Name: LogInvocation
     Value: "True"
 
-# Increment to deploy template-only changes: v0
+# Increment to deploy template-only changes: v1

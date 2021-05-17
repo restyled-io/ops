@@ -4,14 +4,14 @@ Parameters:
   - Name: FunctionName
     Value: forward-logs
   - Name: FunctionSourceKey
-    Value: src/logdna-cloudwatch/v1.zip
+    Value: src/forward-logs/20c49b6b5b5f76fee4716c03f0b63f8edc5f6d27.zip
   - Name: FunctionRuntime
     Value: nodejs10.x
   - Name: FunctionHandler
     Value: index.handler
   - Name: LogForwarding
-    Value: "False"
+    Value: 'False'
   - Name: LogInvocation
-    Value: "True"
+    Value: 'True'
 
 # Increment to deploy template-only changes: v1

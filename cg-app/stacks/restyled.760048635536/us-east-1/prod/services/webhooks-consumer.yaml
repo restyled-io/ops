@@ -1,5 +1,11 @@
-StackName: prod-webhooks
-Template: fargate-backend.yaml
+Template: services/fargate/backend.yaml
+
+Tags:
+  - Key: Environment
+    Value: prod
+  - Key: App
+    Value: webhooks
+
 Parameters:
   - Name: Environment
     Value: prod
@@ -23,10 +29,5 @@ Parameters:
     Value: restyled/restyled.io:264410b
   - Name: RestylerImage
     Value: restyled/restyler:88bfc25
-Tags:
-  - Key: Environment
-    Value: prod
-  - Key: App
-    Value: webhooks
 
-# Increment to deploy template-only changes: v1
+# Increment to deploy template-only changes: v0

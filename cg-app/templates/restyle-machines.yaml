@@ -69,7 +69,7 @@ Resources:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
       ImageId: !Ref InstanceAmi
-      IamInstanceProfile: !Sub "restyled-${Environment}-machine"
+      IamInstanceProfile: restyled-ec2-instance
       KeyName: !Ref InstanceKeyPair
       AssociatePublicIpAddress: true
       SecurityGroups:
@@ -115,11 +115,11 @@ Resources:
           - LifecycleHookName: !Sub "restyled-machine-${Environment}-launching"
             LifecycleTransition: autoscaling:EC2_INSTANCE_LAUNCHING
             NotificationTargetARN: !GetAtt LifecycleHooksQueue.Arn
-            RoleARN: !Sub "arn:aws:iam::${AWS::AccountId}:role/restyled-${Environment}-auto-scaling"
+            RoleARN: !Sub "arn:aws:iam::${AWS::AccountId}:role/restyled-ec2-autoscaling"
           - LifecycleHookName: !Sub "restyled-machine-${Environment}-terminating"
             LifecycleTransition: autoscaling:EC2_INSTANCE_TERMINATING
             NotificationTargetARN: !GetAtt LifecycleHooksQueue.Arn
-            RoleARN: !Sub "arn:aws:iam::${AWS::AccountId}:role/restyled-${Environment}-auto-scaling"
+            RoleARN: !Sub "arn:aws:iam::${AWS::AccountId}:role/restyled-ec2-autoscaling"
 
   LifecycleHooksQueue:
     Type: AWS::SQS::Queue

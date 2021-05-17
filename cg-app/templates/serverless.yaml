@@ -53,7 +53,7 @@ Resources:
       Environment:
         Variables:
           ENV: !Ref Environment
-      Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/restyled-${Environment}-${FunctionRole}"
+      Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/restyled-${FunctionRole}"
 
   LogGroupSubscription:
     Condition: HasLogForwarding

@@ -41,9 +41,17 @@ Parameters:
     Type: Number
     Default: 30
 
+  AlarmThreshold:
+    Type: Number
+    Default: 200
+
   ScheduleExpression:
     Type: String
     Default: ""
+
+Outputs:
+  DashboardUrl:
+    Value: !Sub "https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=${Dashboard}"
 
 Conditions:
   HasService: !Not [!Equals ["", !Ref ServiceName]]
@@ -244,3 +252,64 @@ Resources:
                 Subnets: !Split
                   - ","
                   - Fn::ImportValue: !Sub "${Environment}-SubnetIds"
+
+  Dashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub "restyled-${Environment}-${Name}"
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "height": 9,
+              "width": 12,
+              "y": 0,
+              "x": 0,
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [
+                    "Restyled",
+                    "${ServiceScaleMetric}",
+                    "Environment",
+                    "${Environment}"
+                  ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "period": 60,
+                "annotations": {
+                  "horizontal": [
+                    {
+                      "color": "#ff7f0e",
+                      "label": "ScaleUp",
+                      "value": ${ServiceScaleUpThreshold}
+                    },
+                    {
+                      "color": "#d62728",
+                      "label": "Alarm",
+                      "value": ${AlarmThreshold}
+                    }
+                  ]
+                },
+                "title": "${ServiceScaleMetric}",
+                "stat": "Maximum"
+              }
+            },
+            {
+              "height": 12,
+              "width": 12,
+              "y": 18,
+              "x": 0,
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '${LogGroup}' | fields @timestamp, @message\n| sort @timestamp desc",
+                "region": "${AWS::Region}",
+                "stacked": false,
+                "title": "Logs",
+                "view": "table"
+              }
+            }
+          ]
+        }

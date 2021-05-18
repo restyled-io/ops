@@ -10,6 +10,10 @@ Parameters:
   UnknownFailuresPeriod:
     Type: Number
 
+Outputs:
+  DashboardUrl:
+    Value: !Sub "https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=${Dashboard}"
+
 Resources:
   AlarmsTopic:
     Type: AWS::SNS::Topic
@@ -62,3 +66,104 @@ Resources:
       Threshold: !Ref UnknownFailuresThreshold
       TreatMissingData: breaching
       Unit: Count
+
+  Dashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub "restyled-${Environment}-alarms"
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+                "type": "metric",
+                "height": 9,
+                "width": 12,
+                "y": 0,
+                "x": 0,
+                "properties": {
+                    "title": "Queue Depth",
+                    "annotations": {
+                        "alarms": [
+                            "${QueueDepthAlarm.Arn}"
+                        ]
+                    },
+                    "view": "timeSeries",
+                    "stacked": false
+                }
+            },
+            {
+                "type": "metric",
+                "height": 9,
+                "width": 12,
+                "y": 9,
+                "x": 0,
+                "properties": {
+                    "title": "Unknown Failures",
+                    "annotations": {
+                        "alarms": [
+                            "${UnknownFailuresAlarm.Arn}"
+                        ]
+                    },
+                    "view": "timeSeries",
+                    "stacked": false
+                }
+            },
+            {
+              "height": 9,
+              "width": 12,
+              "y": 18,
+              "x": 0,
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [
+                    "Restyled",
+                    "JobsSuccessRate",
+                    "Environment",
+                    "${Environment}",
+                    {
+                      "yAxis": "right",
+                      "color": "#1f77b4",
+                      "stat": "Average"
+                    }
+                  ],
+                  [
+                    ".",
+                    "JobsFailed",
+                    ".",
+                    ".",
+                    {
+                      "color": "#d62728"
+                    }
+                  ],
+                  [
+                    ".",
+                    "JobsSucceeded",
+                    ".",
+                    ".",
+                    {
+                      "color": "#2ca02c"
+                    }
+                  ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "stat": "Maximum",
+                "period": 60,
+                "title": "Jobs",
+                "liveData": false,
+                "yAxis": {
+                  "right": {
+                    "min": 0,
+                    "max": 100
+                  },
+                  "left": {
+                    "min": 0
+                  }
+                },
+                "setPeriodToTimeRange": true
+              }
+            }
+          ]
+        }

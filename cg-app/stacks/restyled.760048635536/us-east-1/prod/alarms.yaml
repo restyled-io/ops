@@ -16,4 +16,4 @@ Parameters:
   - Name: UnknownFailuresPeriod
     Value: 60
 
-# Increment to deploy template-only changes: v0
+# Increment to deploy template-only changes: v1

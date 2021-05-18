@@ -38,6 +38,10 @@ Parameters:
     Type: String
     Default: https://restyled.io
 
+Outputs:
+  DashboardUrl:
+    Value: !Sub "https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=${Dashboard}"
+
 Resources:
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -192,3 +196,85 @@ Resources:
       Statistic: Maximum
       Threshold: 0
       Unit: Count
+
+  Dashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub "restyled-${Environment}-${Name}"
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "height": 9,
+              "width": 12,
+              "y": 0,
+              "x": 0,
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [
+                    "AWS/AutoScaling",
+                    "GroupTerminatingInstances",
+                    "AutoScalingGroupName",
+                    "${AutoScalingGroup}",
+                    {
+                      "color": "#ff7f0e"
+                    }
+                  ],
+                  [
+                    ".",
+                    "GroupInServiceInstances",
+                    ".",
+                    ".",
+                    {
+                      "color": "#c7c7c7"
+                    }
+                  ],
+                  [
+                    ".",
+                    "GroupPendingInstances",
+                    ".",
+                    ".",
+                    {
+                      "color": "#bcbd22"
+                    }
+                  ]
+                ],
+                "view": "timeSeries",
+                "stacked": true,
+                "region": "${AWS::Region}",
+                "stat": "Maximum",
+                "period": 60,
+                "title": "Instances",
+                "annotations": {
+                  "horizontal": [
+                    {
+                      "color": "#c7c7c7",
+                      "label": "ScaledUp",
+                      "value": ${ScaleUpCapacity}
+                    },
+                    {
+                      "color": "#c7c7c7",
+                      "label": "ScaledDown",
+                      "value": ${DesiredCapacity}
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "height": 12,
+              "width": 12,
+              "y": 18,
+              "x": 0,
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '${LogGroup}' | fields @timestamp, @message\n| sort @timestamp desc",
+                "region": "${AWS::Region}",
+                "stacked": false,
+                "title": "Logs",
+                "view": "table"
+              }
+            }
+          ]
+        }

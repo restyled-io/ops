@@ -22,4 +22,4 @@ Parameters:
   - Name: ScaleUpCapacity
     Value: 6
 
-# Increment to deploy template-only changes: v1
+# Increment to deploy template-only changes: v2

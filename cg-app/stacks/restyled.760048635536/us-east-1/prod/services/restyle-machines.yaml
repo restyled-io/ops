@@ -12,7 +12,7 @@ Parameters:
   - Name: Name
     Value: restyle-machines
   - Name: UserDataSourceKey
-    Value: machines/prod/user-data-v1.0.2
+    Value: src/restyle-machines/user-data/c4969a3000674fe5dd4e318a52cab1d4637b8518
   - Name: DesiredCapacity
     Value: 1
   - Name: ScaleUpMetric

@@ -28,6 +28,6 @@ Parameters:
   - Name: RestyledImage
     Value: restyled/restyled.io:8333f14
   - Name: RestylerImage
-    Value: restyled/restyler:54d9c64
+    Value: restyled/restyler:dc2224f
 
 # Increment to deploy template-only changes: v2

@@ -31,16 +31,6 @@ Parameters:
     Type: String
     Default: patrick@leo
 
-  # TODO: Embed this in user-data
-  AgentVersion:
-    Type: String
-    Default: 1.1.0
-
-  # TODO: Work this out by ENV, within user-data
-  RestyledHost:
-    Type: String
-    Default: https://restyled.io
-
 Outputs:
   DashboardUrl:
     Value: !Sub "https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=${Dashboard}"
@@ -112,10 +102,6 @@ Resources:
           export LIFECYCLE_HOOKS_URL=${LifecycleHooksQueue}
           export LOG_GROUP=${LogGroup}
           export REGION=${AWS::Region}
-
-          # TODO: See Parameters comments
-          export AGENT_VERSION=${AgentVersion}
-          export RESTYLED_API_HOST=${RestyledHost}
 
           echo "Executing user-data"
           ./user-data

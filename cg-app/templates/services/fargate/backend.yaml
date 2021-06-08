@@ -194,9 +194,9 @@ Resources:
             - Name: RESTYLER_TAG
               Value: !Select [1, !Split [":", !Ref RestylerImage]]
             - Name: PGPOOLSTRIPES
-              Value: 1
+              Value: "1"
             - Name: PGPOOLSIZE
-              Value: 5
+              Value: "5"
           Secrets:
             - Name: DATABASE_URL
               ValueFrom: !Sub "/restyled/${Environment}/database-url"

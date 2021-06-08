@@ -11,6 +11,8 @@ Parameters:
     Value: prod
   - Name: Name
     Value: restyle-machines
+  - Name: InstanceType
+    Value: t2.micro
   - Name: UserDataSourceKey
     Value: src/restyle-machines/user-data/c4969a3000674fe5dd4e318a52cab1d4637b8518
   - Name: DesiredCapacity

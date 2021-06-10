@@ -49,10 +49,6 @@ Parameters:
     Type: String
     Default: ""
 
-Outputs:
-  DashboardUrl:
-    Value: !Sub "https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=${Dashboard}"
-
 Conditions:
   HasService: !Not [!Equals ["", !Ref ServiceName]]
   HasScheduleExpression: !Not [!Equals ["", !Ref ScheduleExpression]]
@@ -257,10 +253,35 @@ Resources:
                   - ","
                   - Fn::ImportValue: !Sub "${Environment}-SubnetIds"
 
-  Dashboard:
+  LogsDashboard:
     Type: AWS::CloudWatch::Dashboard
     Properties:
-      DashboardName: !Sub "restyled-${Environment}-${Name}"
+      DashboardName: !Sub "restyled-${Environment}-${Name}-logs"
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "height": 12,
+              "width": 12,
+              "y": 0,
+              "x": 0,
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '${LogGroup}' | fields @timestamp, @message\n| sort @timestamp desc",
+                "region": "${AWS::Region}",
+                "stacked": false,
+                "title": "Logs",
+                "view": "table"
+              }
+            }
+          ]
+        }
+
+  ScalingDashboard:
+    Condition: HasService
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub "restyled-${Environment}-${Name}-scaling"
       DashboardBody: !Sub |
         {
           "widgets": [
@@ -299,20 +320,6 @@ Resources:
                 },
                 "title": "${ServiceScaleMetric}",
                 "stat": "Maximum"
-              }
-            },
-            {
-              "height": 12,
-              "width": 12,
-              "y": 18,
-              "x": 0,
-              "type": "log",
-              "properties": {
-                "query": "SOURCE '${LogGroup}' | fields @timestamp, @message\n| sort @timestamp desc",
-                "region": "${AWS::Region}",
-                "stacked": false,
-                "title": "Logs",
-                "view": "table"
               }
             }
           ]

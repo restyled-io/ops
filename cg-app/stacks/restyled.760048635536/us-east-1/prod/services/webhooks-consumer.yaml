@@ -30,6 +30,7 @@ Parameters:
   - Name: RestylerImage
     Value: restyled/restyler:dc2224f
   - Name: DBPoolSize
-    Value: '3'
+    Value: '2'
+>>>>>>> 6052c41 (Reduce webhooks consumer pool size even more)
 
 # Increment to deploy template-only changes: v4

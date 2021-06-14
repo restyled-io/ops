@@ -21,5 +21,7 @@ Parameters:
     Value: restyled/restyled.io:d5ee6ce
   - Name: RestylerImage
     Value: restyled/restyler:dc2224f
+  - Name: DBPoolSize
+    Value: "1"
 
 # Increment to deploy template-only changes: v3

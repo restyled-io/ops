@@ -18,7 +18,7 @@ Parameters:
   - Name: ScheduleExpression
     Value: rate(5 minutes)
   - Name: RestyledImage
-    Value: restyled/restyled.io:7265131
+    Value: restyled/restyled.io:24043c1
   - Name: RestylerImage
     Value: restyled/restyler:dc2224f
   - Name: DBPoolSize

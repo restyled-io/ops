@@ -17,10 +17,6 @@ Parameters:
   RestylerImage:
     Type: String
 
-  DBPoolSize:
-    Type: String
-    Default: "3"
-
   LogRetentionInDays:
     Type: Number
     Default: 7
@@ -193,10 +189,6 @@ Resources:
               Value: !Select [0, !Split [":", !Ref RestylerImage]]
             - Name: RESTYLER_TAG
               Value: !Select [1, !Split [":", !Ref RestylerImage]]
-            - Name: PGPOOLSTRIPES
-              Value: "1"
-            - Name: PGPOOLSIZE
-              Value: !Ref DBPoolSize
           Secrets:
             - Name: DATABASE_URL
               ValueFrom: !Sub "/restyled/${Environment}/database-url"

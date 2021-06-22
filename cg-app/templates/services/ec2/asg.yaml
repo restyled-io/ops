@@ -31,6 +31,18 @@ Parameters:
     Type: String
     Default: patrick@leo
 
+  DatadogAgentMajorVersion:
+    Type: String
+    Default: '7'
+
+  DatadogApiKey:
+    Type: String
+    Default: ''
+
+  DatadogSite:
+    Type: String
+    Default: 'datadoghq.com'
+
 Outputs:
   DashboardUrl:
     Value: !Sub "https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=${Dashboard}"
@@ -102,6 +114,10 @@ Resources:
           export LIFECYCLE_HOOKS_URL=${LifecycleHooksQueue}
           export LOG_GROUP=${LogGroup}
           export REGION=${AWS::Region}
+
+          export DD_AGENT_MAJOR_VERSION=${DatadogAgentMajorVersion}
+          export DD_API_KEY=${DatadogApiKey}
+          export DD_SITE=${DatadogSite}
 
           echo "Executing user-data"
           ./user-data

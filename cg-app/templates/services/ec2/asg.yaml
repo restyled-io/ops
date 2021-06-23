@@ -36,8 +36,8 @@ Parameters:
     Default: '7'
 
   DatadogApiKey:
-    Type: String
-    Default: ''
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    NoEcho: true
 
   DatadogSite:
     Type: String

@@ -24,6 +24,6 @@ Parameters:
   - Name: ScaleUpCapacity
     Value: 6
   - Name: DatadogApiKey
-    Value: '{{resolve:ssm:/restyled/prod/dd-api-key:1}}'
+    Value: '/restyled/prod/dd-api-key'
 
 # Increment to deploy template-only changes: v2

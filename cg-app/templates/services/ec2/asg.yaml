@@ -35,7 +35,7 @@ Parameters:
     Type: String
     Default: '7'
 
-  DatadogApiKey2:
+  DatadogApiKey:
     Type: 'AWS::SSM::Parameter::Value<String>'
     NoEcho: true
 
@@ -116,7 +116,7 @@ Resources:
           export REGION=${AWS::Region}
 
           export DD_AGENT_MAJOR_VERSION=${DatadogAgentMajorVersion}
-          export DD_API_KEY=${DatadogApiKey2}
+          export DD_API_KEY=${DatadogApiKey}
           export DD_SITE=${DatadogSite}
 
           echo "Executing user-data"

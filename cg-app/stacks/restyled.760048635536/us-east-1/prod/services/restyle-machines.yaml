@@ -23,7 +23,7 @@ Parameters:
     Value: 30
   - Name: ScaleUpCapacity
     Value: 6
-  - Name: DatadogApiKey2
+  - Name: DatadogApiKey
     Value: '/restyled/prod/dd-api-key'
 
 # Increment to deploy template-only changes: v5

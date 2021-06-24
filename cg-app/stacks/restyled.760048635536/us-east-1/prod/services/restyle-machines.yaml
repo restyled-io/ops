@@ -14,7 +14,7 @@ Parameters:
   - Name: InstanceType
     Value: t2.small
   - Name: UserDataSourceKey
-    Value: src/restyle-machines/user-data/1628f565099c1139b1afdf13077f5e29f2be619d
+    Value: src/restyle-machines/user-data/161f146a6a5e715f10453f5cddc6b6bad65019e3
   - Name: DesiredCapacity
     Value: 1
   - Name: ScaleUpMetric
@@ -24,6 +24,6 @@ Parameters:
   - Name: ScaleUpCapacity
     Value: 6
   - Name: DatadogApiKey
-    Value: '/restyled/prod/dd-api-key'
+    Value: /restyled/prod/dd-api-key
 
 # Increment to deploy template-only changes: v5

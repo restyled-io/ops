@@ -29,5 +29,9 @@ Parameters:
     Value: restyled/restyled.io:3d83346
   - Name: RestylerImage
     Value: restyled/restyler:5987ecd
+  - Name: RestylerLogGroup
+    Value: restyled/prod/restyler
+  - Name: RestylerLogStreamPrefix
+    Value: jobs/
 
 # Increment to deploy template-only changes: v4

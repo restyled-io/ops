@@ -1,0 +1,14 @@
+Parameters:
+  Environment:
+    Type: String
+  Name:
+    Type: String
+  RetentionInDays:
+    Type: Number
+
+Resources:
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "restyled/${Environment}/${Name}"
+      RetentionInDays: !Ref RetentionInDays

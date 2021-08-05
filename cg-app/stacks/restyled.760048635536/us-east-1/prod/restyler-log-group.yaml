@@ -1,0 +1,11 @@
+Template: log-group.yaml
+
+Parameters:
+  - Name: Environment
+    Value: prod
+  - Name: Name
+    Value: restyler
+  - Name: RetentionInDays
+    Value: 30
+
+# Increment to deploy template-only changes: v1

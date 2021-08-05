@@ -17,6 +17,12 @@ Parameters:
   RestylerImage:
     Type: String
 
+  RestylerLogGroup:
+    Type: String
+
+  RestylerLogStreamPrefix:
+    Type: String
+
   LogRetentionInDays:
     Type: Number
     Default: 7
@@ -189,6 +195,10 @@ Resources:
               Value: !Select [0, !Split [":", !Ref RestylerImage]]
             - Name: RESTYLER_TAG
               Value: !Select [1, !Split [":", !Ref RestylerImage]]
+            - Name: RESTYLER_LOG_GROUP
+              Value: !Ref RestylerLogGroup
+            - Name: RESTYLER_LOG_STREAM_PREFIX
+              Value: !Ref RestylerLogStreamPrefix
           Secrets:
             - Name: DATABASE_URL
               ValueFrom: !Sub "/restyled/${Environment}/database-url"

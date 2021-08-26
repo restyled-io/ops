@@ -28,7 +28,7 @@ Parameters:
   - Name: RestyledImage
     Value: restyled/restyled.io:d4bd56c
   - Name: RestylerImage
-    Value: restyled/restyler:26220ed
+    Value: restyled/restyler:bc5c27a
   - Name: RestylerLogGroup
     Value: restyled/prod/restyler
   - Name: RestylerLogStreamPrefix

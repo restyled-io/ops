@@ -26,7 +26,7 @@ Parameters:
   - Name: ServiceScaleMetric
     Value: QueueDepth
   - Name: RestyledImage
-    Value: restyled/restyled.io:d4bd56c
+    Value: restyled/restyled.io:d690f64
   - Name: RestylerImage
     Value: restyled/restyler:bc5c27a
   - Name: RestylerLogGroup

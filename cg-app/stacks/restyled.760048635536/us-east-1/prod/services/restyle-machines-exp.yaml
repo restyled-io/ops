@@ -22,7 +22,7 @@ Parameters:
   - Name: ScaleUpThreshold
     Value: 30
   - Name: ScaleUpCapacity
-    Value: 1
+    Value: 2
   - Name: DatadogApiKey
     Value: /restyled/prod/dd-api-key
 

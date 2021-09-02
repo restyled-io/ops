@@ -143,6 +143,16 @@ Resources:
             LifecycleTransition: autoscaling:EC2_INSTANCE_TERMINATING
             NotificationTargetARN: !GetAtt LifecycleHooksQueue.Arn
             RoleARN: !Sub "arn:aws:iam::${AWS::AccountId}:role/restyled-ec2-autoscaling"
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MinInstancesInService: !Sub "${DesiredCapacity}"
+        WaitOnResourceSignals: false
+        SuspendProcesses:
+          - AZRebalance
+          - AlarmNotification
+          - HealthCheck
+          - ReplaceUnhealthy
+          - ScheduledActions
 
   LifecycleHooksQueue:
     Type: AWS::SQS::Queue

@@ -4,13 +4,13 @@ Tags:
   - Key: Environment
     Value: prod
   - Key: App
-    Value: restyle-machines
+    Value: restyle-machines-exp
 
 Parameters:
   - Name: Environment
     Value: prod
   - Name: Name
-    Value: restyle-machines
+    Value: restyle-machines-exp
   - Name: InstanceType
     Value: t2.small
   - Name: UserDataSourceKey
@@ -22,7 +22,7 @@ Parameters:
   - Name: ScaleUpThreshold
     Value: 30
   - Name: ScaleUpCapacity
-    Value: 6
+    Value: 1
   - Name: DatadogApiKey
     Value: /restyled/prod/dd-api-key
 

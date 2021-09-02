@@ -1,0 +1,29 @@
+Template: services/ec2/asg.yaml
+
+Tags:
+  - Key: Environment
+    Value: prod
+  - Key: App
+    Value: restyle-machines
+
+Parameters:
+  - Name: Environment
+    Value: prod
+  - Name: Name
+    Value: restyle-machines
+  - Name: InstanceType
+    Value: t2.small
+  - Name: UserDataSourceKey
+    Value: src/restyle-machines/user-data/59a69eee0f0da7fd3f9fc164560d7ac30dca54aa
+  - Name: DesiredCapacity
+    Value: 1
+  - Name: ScaleUpMetric
+    Value: QueueDepth
+  - Name: ScaleUpThreshold
+    Value: 30
+  - Name: ScaleUpCapacity
+    Value: 6
+  - Name: DatadogApiKey
+    Value: /restyled/prod/dd-api-key
+
+# Increment to deploy template-only changes: v0

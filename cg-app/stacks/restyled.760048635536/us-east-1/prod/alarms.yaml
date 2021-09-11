@@ -11,9 +11,5 @@ Parameters:
     Value: 200
   - Name: QueueDepthPeriod
     Value: 120
-  - Name: UnknownFailuresThreshold
-    Value: 5
-  - Name: UnknownFailuresPeriod
-    Value: 60
 
 # Increment to deploy template-only changes: v1

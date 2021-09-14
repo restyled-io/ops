@@ -22,4 +22,4 @@ Parameters:
   - Name: RestylerImage
     Value: restyled/restyler:bc5c27a
 
-# Increment to deploy template-only changes: v3
+# Increment to deploy template-only changes: v4

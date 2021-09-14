@@ -28,6 +28,8 @@ Resources:
       Dimensions:
         - Name: Environment
           Value: !Ref Environment
+        - Name: QueueName
+          Value: "restyled:hooks:webhooks" # TODO
       EvaluationPeriods: 2
       MetricName: QueueDepth
       Namespace: Restyled

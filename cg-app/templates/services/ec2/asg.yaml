@@ -177,6 +177,8 @@ Resources:
       Dimensions:
         - Name: Environment
           Value: !Ref Environment
+        - Name: QueueName
+          Value: "restyled:hooks:webhooks" # TODO
       EvaluationPeriods: 1
       MetricName: !Ref ScaleUpMetric
       Namespace: Restyled
@@ -204,6 +206,8 @@ Resources:
       Dimensions:
         - Name: Environment
           Value: !Ref Environment
+        - Name: QueueName
+          Value: "restyled:hooks:webhooks" # TODO
       EvaluationPeriods: 1
       MetricName: !Ref ScaleUpMetric
       Namespace: Restyled

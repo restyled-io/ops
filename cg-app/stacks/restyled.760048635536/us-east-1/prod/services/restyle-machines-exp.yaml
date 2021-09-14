@@ -26,4 +26,4 @@ Parameters:
   - Name: DatadogApiKey
     Value: /restyled/prod/dd-api-key
 
-# Increment to deploy template-only changes: v0
+# Increment to deploy template-only changes: v1

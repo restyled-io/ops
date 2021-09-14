@@ -14,8 +14,9 @@ Parameters:
   DesiredCapacity:
     Type: Number
 
-  ScaleUpMetric:
+  RestylerQueueName:
     Type: String
+    Default: restyled:hooks:webhooks
 
   ScaleUpThreshold:
     Type: Number
@@ -119,6 +120,8 @@ Resources:
           export DD_API_KEY=${DatadogApiKey}
           export DD_SITE=${DatadogSite}
 
+          export RESTYLER_QUEUE_NAME=${RestylerQueueName}
+
           echo "Executing user-data"
           ./user-data
 
@@ -178,9 +181,9 @@ Resources:
         - Name: Environment
           Value: !Ref Environment
         - Name: QueueName
-          Value: "restyled:hooks:webhooks" # TODO
+          Value: !Ref RestylerQueueName
       EvaluationPeriods: 1
-      MetricName: !Ref ScaleUpMetric
+      MetricName: QueueDepth
       Namespace: Restyled
       Period: 60
       Statistic: Minimum
@@ -207,9 +210,9 @@ Resources:
         - Name: Environment
           Value: !Ref Environment
         - Name: QueueName
-          Value: "restyled:hooks:webhooks" # TODO
+          Value: !Ref RestylerQueueName
       EvaluationPeriods: 1
-      MetricName: !Ref ScaleUpMetric
+      MetricName: QueueDepth
       Namespace: Restyled
       Period: 60
       Statistic: Maximum

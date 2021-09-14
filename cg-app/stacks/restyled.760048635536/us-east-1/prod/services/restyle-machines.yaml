@@ -17,8 +17,6 @@ Parameters:
     Value: src/restyle-machines/user-data/59a69eee0f0da7fd3f9fc164560d7ac30dca54aa
   - Name: DesiredCapacity
     Value: 1
-  - Name: ScaleUpMetric
-    Value: QueueDepth
   - Name: ScaleUpThreshold
     Value: 30
   - Name: ScaleUpCapacity

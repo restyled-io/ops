@@ -4,13 +4,13 @@ Tags:
   - Key: Environment
     Value: prod
   - Key: App
-    Value: restyle-machines-exp
+    Value: restyle-machines
 
 Parameters:
   - Name: Environment
     Value: prod
   - Name: Name
-    Value: restyle-machines-exp
+    Value: restyle-machines
   - Name: InstanceType
     Value: t2.small
   - Name: UserDataSourceKey
@@ -26,4 +26,4 @@ Parameters:
   - Name: DatadogApiKey
     Value: /restyled/prod/dd-api-key
 
-# Increment to deploy template-only changes: v1
+# Increment to deploy template-only changes: v2

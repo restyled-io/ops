@@ -16,7 +16,6 @@ Parameters:
 
   RestylerQueueName:
     Type: String
-    Default: restyled:hooks:webhooks
 
   ScaleUpThreshold:
     Type: Number

@@ -29,30 +29,6 @@ Resources:
         - Name: Environment
           Value: !Ref Environment
         - Name: QueueName
-          Value: "restyled:hooks:webhooks"
-      EvaluationPeriods: 2
-      MetricName: QueueDepth
-      Namespace: Restyled
-      Period: !Ref QueueDepthPeriod
-      Statistic: Minimum
-      Threshold: !Ref QueueDepthThreshold
-      TreatMissingData: breaching
-      Unit: Count
-
-  QueueDepthAlarmExp:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmActions:
-        - !Ref AlarmsTopic
-      OKActions:
-        - !Ref AlarmsTopic
-      AlarmDescription: !Sub "Restyled ${Environment} Queue is at Alert threshold"
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 1
-      Dimensions:
-        - Name: Environment
-          Value: !Ref Environment
-        - Name: QueueName
           Value: "restyled:agent:webhooks"
       EvaluationPeriods: 2
       MetricName: QueueDepth

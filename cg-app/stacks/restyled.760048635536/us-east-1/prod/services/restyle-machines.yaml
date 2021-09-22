@@ -4,19 +4,21 @@ Tags:
   - Key: Environment
     Value: prod
   - Key: App
-    Value: restyle-machines
+    Value: restyle-machines-exp
 
 Parameters:
   - Name: Environment
     Value: prod
   - Name: Name
-    Value: restyle-machines
+    Value: restyle-machines-exp
   - Name: InstanceType
     Value: t2.small
   - Name: UserDataSourceKey
-    Value: src/restyle-machines/user-data/59a69eee0f0da7fd3f9fc164560d7ac30dca54aa
+    Value: src/restyle-machines/user-data/d2b96e2ad494ea5d6e0d48746b7879c26e60abf5
   - Name: DesiredCapacity
     Value: 1
+  - Name: RestylerQueueName
+    Value: restyled:agent:webhooks
   - Name: ScaleUpThreshold
     Value: 30
   - Name: ScaleUpCapacity
@@ -24,4 +26,4 @@ Parameters:
   - Name: DatadogApiKey
     Value: /restyled/prod/dd-api-key
 
-# Increment to deploy template-only changes: v6
+# Increment to deploy template-only changes: v1

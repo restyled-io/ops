@@ -18,7 +18,7 @@ Parameters:
   - Name: ScheduleExpression
     Value: rate(5 minutes)
   - Name: RestyledImage
-    Value: restyled/restyled.io:0fe69c6
+    Value: restyled/restyled.io:f5439c2
   - Name: RestylerImage
     Value: restyled/restyler:bc5c27a
   - Name: RestylerLogGroup

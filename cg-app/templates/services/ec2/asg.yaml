@@ -14,14 +14,14 @@ Parameters:
   DesiredCapacity:
     Type: Number
 
-  RestylerQueueName:
-    Type: String
-
   ScaleUpThreshold:
     Type: Number
 
   ScaleUpCapacity:
     Type: Number
+
+  RestylerQueueName:
+    Type: String
 
   InstanceAmi:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>

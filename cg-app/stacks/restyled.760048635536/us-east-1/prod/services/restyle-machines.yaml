@@ -15,14 +15,17 @@ Parameters:
     Value: t2.small
   - Name: UserDataSourceKey
     Value: src/restyle-machines/user-data/b4c166441fb3245bae036ea3ba39a979cec6fb74
+
   - Name: DesiredCapacity
     Value: 1
-  - Name: RestylerQueueName
-    Value: restyled:agent:webhooks
   - Name: ScaleUpThreshold
     Value: 30
   - Name: ScaleUpCapacity
     Value: 6
+
+  - Name: RestylerQueueName
+    Value: restyled:agent:webhooks
+
   - Name: DatadogApiKey
     Value: /restyled/prod/dd-api-key
 

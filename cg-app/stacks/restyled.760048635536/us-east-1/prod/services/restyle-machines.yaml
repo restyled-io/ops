@@ -25,7 +25,17 @@ Parameters:
 
   - Name: RestylerQueueName
     Value: restyled:agent:webhooks
+  - Name: RestylerPoolSize
+    Value: 3
 
+  - Name: GitHubAppId
+    Value: /restyled/prod/github-app-id
+  - Name: GitHubAppKey
+    Value: /restyled/prod/github-app-key
+  - Name: RestyledToken
+    Value: /restyled/prod/restyled-api-token
+  - Name: RedisUrl
+    Value: /restyled/prod/redis-url
   - Name: DatadogApiKey
     Value: /restyled/prod/dd-api-key
 

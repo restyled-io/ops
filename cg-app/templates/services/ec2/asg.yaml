@@ -23,6 +23,24 @@ Parameters:
   RestylerQueueName:
     Type: String
 
+  RestylerPoolSize:
+    Type: Number
+
+  GitHubAppId:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+
+  GitHubAppKey:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    NoEcho: true
+
+  RestyledToken:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    NoEcho: true
+
+  RedisUrl:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    NoEcho: true
+
   InstanceAmi:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id
@@ -120,6 +138,12 @@ Resources:
           export DD_SITE=${DatadogSite}
 
           export RESTYLER_QUEUE_NAME=${RestylerQueueName}
+          export RESTYLER_POOL_SIZE=${RestylerPoolSize}
+
+          export GITHUB_APP_ID=${GitHubAppId}
+          export GITHUB_APP_KEY=${GitHubAppKey}
+          export RESTYLED_TOKEN=${RestyledToken}
+          export REDIS_URL=${RedisUrl}
 
           echo "Executing user-data"
           ./user-data

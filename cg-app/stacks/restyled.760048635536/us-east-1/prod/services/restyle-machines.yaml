@@ -19,7 +19,7 @@ Parameters:
   - Name: DesiredCapacity
     Value: 1
   - Name: ScaleUpThreshold
-    Value: 30
+    Value: 29
   - Name: ScaleUpCapacity
     Value: 6
 

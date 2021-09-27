@@ -11,19 +11,11 @@ Parameters:
     Value: prod
   - Name: Name
     Value: sync-marketplace
-  - Name: Subcommand
+  - Name: Command
     Value: sync-marketplace
-  - Name: Approot
-    Value: https://restyled.io
   - Name: ScheduleExpression
     Value: rate(5 minutes)
   - Name: RestyledImage
     Value: restyled/restyled.io:4ec3892
-  - Name: RestylerImage
-    Value: restyled/restyler:bc5c27a
-  - Name: RestylerLogGroup
-    Value: restyled/prod/restyler
-  - Name: RestylerLogStreamPrefix
-    Value: jobs/
 
 # Increment to deploy template-only changes: v4

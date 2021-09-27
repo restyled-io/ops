@@ -141,7 +141,7 @@ Resources:
           export RESTYLER_POOL_SIZE=${RestylerPoolSize}
 
           export GITHUB_APP_ID=${GitHubAppId}
-          export GITHUB_APP_KEY=${GitHubAppKey}
+          export GITHUB_APP_KEY='${GitHubAppKey}'
           export RESTYLED_TOKEN=${RestyledToken}
           export REDIS_URL=${RedisUrl}
 

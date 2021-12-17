@@ -12,6 +12,6 @@ Parameters:
   - Name: FunctionRole
     Value: check-redis-url
   - Name: ScheduleExpression
-    Value: rate(15 minutes)
+    Value: rate(10 minutes)
 
 # Increment to deploy template-only changes: v1

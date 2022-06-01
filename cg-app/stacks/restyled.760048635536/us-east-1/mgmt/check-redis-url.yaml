@@ -14,4 +14,4 @@ Parameters:
   - Name: ScheduleExpression
     Value: rate(10 minutes)
 
-# Increment to deploy template-only changes: v1
+# Increment to deploy template-only changes: v2

@@ -63,7 +63,7 @@ Resources:
     Properties:
       DestinationArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:restyled-forward-logs"
       LogGroupName: !Ref LogGroup
-      FilterPattern: ""
+      FilterPattern: "-START -END -REPORT"
 
   LambdaScheduleRule:
     Condition: HasScheduleExpression

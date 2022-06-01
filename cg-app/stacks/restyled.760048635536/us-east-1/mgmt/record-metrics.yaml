@@ -4,7 +4,7 @@ Parameters:
   - Name: FunctionName
     Value: record-metrics
   - Name: FunctionSourceKey
-    Value: src/record-metrics/e2f5cbc1053d19dff358d0e5cb11bde22e1507c4.zip
+    Value: src/record-metrics/ce2bc68348162411c4b0635534ea145f62691a84.zip
   - Name: ScheduleExpression
     Value: rate(1 minute)
 

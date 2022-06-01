@@ -1,0 +1,33 @@
+Parameters:
+  LogDNAKey:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /restyled/logdna-key
+    NoEcho: true
+  LogDNACloudWatchVersion:
+    Type: String
+
+Resources:
+  LambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: "restyled-forward-logs"
+      Runtime: nodejs14.x
+      Code:
+        S3Bucket: infra.restyled.io
+        S3Key: !Sub src/logdna-cloudwatch/${LogDNACloudWatchVersion}.zip
+      Handler: index.handler
+      Timeout: 30
+      Environment:
+        Variables:
+          LOGDNA_KEY: !Ref 'LogDNAKey'
+          LOG_RAW_EVENTS: 'YES'
+      Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/restyled-lambda-execution"
+
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LambdaFunction
+      Principal: !Sub "logs.${AWS::Region}.amazonaws.com"
+      SourceAccount: !Ref AWS::AccountId
+      SourceArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:*"

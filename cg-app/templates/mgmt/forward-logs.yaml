@@ -20,7 +20,7 @@ Resources:
       Environment:
         Variables:
           LOGDNA_KEY: !Ref 'LogDNAKey'
-          LOG_RAW_EVENTS: 'YES'
+          LOG_RAW_EVENT: 'YES'
       Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/restyled-lambda-execution"
 
   LambdaInvokePermission:

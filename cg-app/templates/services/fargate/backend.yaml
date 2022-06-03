@@ -178,6 +178,9 @@ Resources:
         - Name: main
           Image: !Ref RestyledImage
           Command: [!Sub "/app/${Command}"]
+          Environment:
+            - Name: LOG_FORMAT
+              Value: json
           Secrets:
             - Name: DATABASE_URL
               ValueFrom: !Sub "/restyled/${Environment}/database-url"

@@ -14,7 +14,7 @@ Parameters:
   - Name: InstanceType
     Value: t2.small
   - Name: UserDataSourceKey
-    Value: src/restyle-machines/user-data/5c4b3b28dcd397878b00e6be9b8dce6cd794f34d
+    Value: src/restyle-machines/user-data/0dfecd344a6ce45956cfebd666570c3311dc0579
 
   - Name: DesiredCapacity
     Value: 1

@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if (($# != 1)); then
+  echo "Usage: $0 <COLOR>" >&2
+  exit 64
+fi
+
+name=HEROKU_REDIS_${1}_URL
+url=$(heroku config:get "$name" --app restyled-io)
+
+if [[ -z "$url" ]]; then
+  echo "Heroku config $name has no value" >&2
+  exit 1
+fi
+
+AWS_PROFILE=restyled aws ssm put-parameter \
+  --name /restyled/prod/redis-url \
+  --value "$url" \
+  --overwrite
+
+AWS_PROFILE=restyled ./bin/scale-restyle-machines 2
+
+heroku config:set "REDIS_URL=$url" --app restyled-io

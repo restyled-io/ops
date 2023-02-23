@@ -1,0 +1,134 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'EOM'
+Usage: $0 [OPTION]... <CAPACITY>
+Scale the restyle-machines ASG to a given capacity and wait for it.
+
+Options:
+  -l TIMES      Loop this many TIMES waiting for the ASG to settle
+  -d SECONDS    Delay this many SECONDS between loops
+  -q            Query and report ASG status only
+  -h            Show this help text
+
+Arguments:
+  CAPACITY      Set the ASG to this DesiredCapacity. If this argument is
+                incompatible with MinSize or MaxSize, that will be adjusted as
+                necessary too.
+
+Environment:
+  AWS_PROFILE   Likely necessary for this to work.
+
+EOM
+}
+
+asg_name=
+asg_min_size=
+asg_max_size=
+asg_desired_capacity=
+asg_in_service=
+
+query_asg() {
+  local json
+
+  json=$(aws autoscaling describe-auto-scaling-groups |
+    jq -r '.AutoScalingGroups[] | select(.AutoScalingGroupName | match("restyle-machines"))')
+
+  asg_name=$(jq -r '.AutoScalingGroupName' <<<"$json")
+  asg_min_size=$(jq -r '.MinSize' <<<"$json")
+  asg_max_size=$(jq -r '.MaxSize' <<<"$json")
+  asg_desired_capacity=$(jq -r '.DesiredCapacity' <<<"$json")
+  asg_in_service=$({
+    jq -r '.Instances[] | select(.LifecycleState == "InService") | .InstanceId' | wc -l
+  } <<<"$json")
+}
+
+limit=50
+delay=10
+query=0
+
+while getopts l:d:qh opt; do
+  case "$opt" in
+    l)
+      limit=$OPTARG
+      ;;
+    d)
+      delay=$OPTARG
+      ;;
+    q)
+      query=1
+      ;;
+    h)
+      usage
+      exit 0
+      ;;
+    \?)
+      usage >&2
+      exit 64
+      ;;
+  esac
+done
+
+shift $((OPTIND - 1))
+
+if (($# != 1)); then
+  usage >&2
+  exit 64
+fi
+
+capacity=$1
+
+query_asg
+printf '%s\n' "$asg_name"
+printf '  MinSize        : %d\n' "$asg_min_size"
+printf '  MaxSize        : %d\n' "$asg_max_size"
+printf '  DesiredCapacity: %d (%d InService)\n' \
+  "$asg_desired_capacity" \
+  "$asg_in_service"
+
+if ((capacity == asg_desired_capacity)); then
+  echo "ASG is already at desired capacity"
+else
+  options=(--desired-capacity "$capacity")
+
+  if ((capacity < asg_min_size)); then
+    options+=(--min-size "$capacity")
+  fi
+
+  if ((capacity > asg_max_size)); then
+    options+=(--max-size "$capacity")
+  fi
+
+  echo "ASG requires update: ${options[*]}"
+
+  if ((!query)); then
+    aws autoscaling update-auto-scaling-group \
+      --auto-scaling-group-name "$asg_name" \
+      "${options[@]}"
+  fi
+fi
+
+n=0
+while true; do
+  query_asg
+
+  printf 'ASG has %d/%d instances in service [check %d/%d every %ds]\n' \
+    "$asg_in_service" \
+    "$asg_desired_capacity" \
+    "$n" \
+    "$limit" \
+    "$delay"
+
+  if ((asg_in_service == asg_desired_capacity)); then
+    echo "ASG is in steady state"
+    break
+  fi
+
+  if ((n++ >= limit)); then
+    echo "ASG never settled" >&2
+    exit 1
+  fi
+
+  sleep "$delay"
+done

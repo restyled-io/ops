@@ -11,7 +11,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: "restyled-forward-logs"
-      Runtime: nodejs14.x
+      Runtime: nodejs16.x
       Code:
         S3Bucket: infra.restyled.io
         S3Key: !Sub src/logdna-cloudwatch/${LogDNACloudWatchVersion}.zip

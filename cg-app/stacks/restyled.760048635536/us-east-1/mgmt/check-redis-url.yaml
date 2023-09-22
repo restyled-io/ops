@@ -6,7 +6,7 @@ Parameters:
   - Name: FunctionSourceKey
     Value: src/check-redis-url/72f56cacbdf175f15d9c17e948efb0f6675fa56b.zip
   - Name: FunctionRuntime
-    Value: nodejs14.x
+    Value: nodejs18.x
   - Name: FunctionHandler
     Value: index.handler
   - Name: FunctionRole

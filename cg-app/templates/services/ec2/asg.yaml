@@ -47,7 +47,7 @@ Parameters:
 
   InstanceKeyPair:
     Type: String
-    Default: patrick@prince
+    Default: patrick@pele
 
   DatadogAgentMajorVersion:
     Type: String

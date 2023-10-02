@@ -88,6 +88,28 @@ Resources:
           ]
         }
 
+  ModifyOwnInstanceMetadataPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Modify instance metadata
+      PolicyDocument: !Sub |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": "ec2:ModifyInstanceMetadataOptions",
+              "Resource": "arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:instance/*",
+              "Condition": {
+                "StringLike": {
+                  "aws:userid": "*:${!ec2:InstanceID}"
+                }
+              }
+            }
+          ]
+        }
+
+
   SNSPublishPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
@@ -230,6 +252,7 @@ Resources:
         - !Ref SNSPublishPolicy
         - !Ref SQSAccessPolicy
         - !Ref StoreCloudWatchLogsPolicy
+        - !Ref ModifyOwnInstanceMetadataPolicy
 
   EC2InstanceProfile:
     Type: AWS::IAM::InstanceProfile

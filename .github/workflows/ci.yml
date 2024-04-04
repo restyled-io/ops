@@ -61,11 +61,10 @@ jobs:
           aws-access-key-id: ${{ secrets.aws_access_key_id }}
           aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
 
-      - if: ${{ env.STACK_FILTER != '' }}
+      - if: ${{ needs.changes.outputs.files != '' }}
         run: stackctl changes --format pr /tmp/changes.md
 
       - id: prep
-        if: ${{ env.STACK_FILTER != '' }}
         run: |
           tmp=$(mktemp)
           echo "message-path=$tmp" >>"$GITHUB_OUTPUT"
@@ -77,7 +76,6 @@ jobs:
           fi
 
       - uses: mshick/add-pr-comment@v2
-        if: ${{ env.STACK_FILTER != '' }}
         with:
           message-path: ${{ steps.prep.outputs.message-path }}
           refresh-message-position: "true"
@@ -105,5 +103,5 @@ jobs:
           aws-access-key-id: ${{ secrets.aws_access_key_id }}
           aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
 
-      - if: ${{ env.STACK_FILTER != '' }}
+      - if: ${{ needs.changes.outputs.files != '' }}
         run: stackctl deploy --save-change-sets /tmp/changes --no-confirm --clean

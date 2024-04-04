@@ -114,4 +114,4 @@ jobs:
 
       - if: ${{ needs.changes.outputs.files != '' }}
         working-directory: cg-app
-        run: stackctl deploy --save-change-sets /tmp/changes --no-confirm --clean
+        run: stackctl deploy --no-confirm --clean

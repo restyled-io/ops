@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: filter
-        uses: dorny/paths-filter@v2
+        uses: dorny/paths-filter@v3
         with:
           working-directory: ${{ env.STACKCTL_DIRECTORY }}
           filters: |
@@ -57,9 +57,9 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
+          aws-region: us-east-1
           aws-access-key-id: ${{ secrets.aws_access_key_id }}
-          aws-secret_access-key: ${{ secrets.aws_secret_access_key }}
-          aws-default-region: us-east-1
+          aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
 
       - if: ${{ needs.changes.outputs.files != '' }}
         run: stackctl changes --format pr /tmp/changes.md
@@ -99,9 +99,9 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
+          aws-region: us-east-1
           aws-access-key-id: ${{ secrets.aws_access_key_id }}
-          aws-secret_access-key: ${{ secrets.aws_secret_access_key }}
-          aws-default-region: us-east-1
+          aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
 
       - if: ${{ needs.changes.outputs.files != '' }}
         run: stackctl deploy --save-change-sets /tmp/changes --no-confirm --clean

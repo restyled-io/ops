@@ -28,15 +28,24 @@ jobs:
       - id: filter
         uses: dorny/paths-filter@v3
         with:
-          working-directory: ${{ env.STACKCTL_DIRECTORY }}
           filters: |
             yamls:
-              - 'cg-app/stacks/**/*.yaml'
-              - 'cg-app/templates/**/*.json'
-              - 'cg-app/templates/**/*.yaml'
+              - '${{ env.STACKCTL_DIRECTORY }}/stacks/**/*.yaml'
+              - '${{ env.STACKCTL_DIRECTORY }}/templates/**/*.json'
+              - '${{ env.STACKCTL_DIRECTORY }}/templates/**/*.yaml'
           list-files: csv
+      # Make the paths relative to STACKCTL_DIRECTORY
+      - id: format
+        run: |
+          {
+            echo 'files<<EOF'
+            sed 's%${{ env.STACKCTL_DIRECTORY }}/%%g' <<'EOM'
+            ${{ steps.filter.outputs.yamls_files }}
+            EOM
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
     outputs:
-      files: ${{ steps.filter.outputs.yamls_files }}
+      files: ${{ steps.format.outputs.files }}
 
   comment-changes:
     if: ${{ github.ref != 'refs/heads/main' }}

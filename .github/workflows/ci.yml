@@ -69,9 +69,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
 
       - if: ${{ needs.changes.outputs.files != '' }}
-        run: >-
-          stackctl --filter '${{ needs.changes.outputs.files }}'
-            changes --format pr /tmp/changes.md
+        run: |
+          stackctl --filter '${{ needs.changes.outputs.files }}' changes --format pr /tmp/changes.md
 
       - id: prep
         run: |
@@ -111,6 +110,5 @@ jobs:
           aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
 
       - if: ${{ needs.changes.outputs.files != '' }}
-        run: >-
-          stackctl --filter '${{ needs.changes.outputs.files }}'
-            deploy --save-change-sets /tmp/changes --no-confirm --clean
+        run: |
+          stackctl --filter '${{ needs.changes.outputs.files }}' deploy --save-change-sets /tmp/changes --no-confirm --clean

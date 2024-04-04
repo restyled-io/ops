@@ -62,8 +62,6 @@ jobs:
           os-darwin: osx
           subdir: "{name}"
 
-      - run: echo 'STACKCTL_FILTER=${{ needs.changes.outputs.files }}' >>"$GITHUB_ENV"
-
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: us-east-1
@@ -71,7 +69,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
 
       - if: ${{ needs.changes.outputs.files != '' }}
-        run: stackctl changes --format pr /tmp/changes.md
+        run: >-
+          stackctl --filter '${{ needs.changes.outputs.files }}'
+            changes --format pr /tmp/changes.md
 
       - id: prep
         run: |
@@ -104,8 +104,6 @@ jobs:
           os-darwin: osx
           subdir: "{name}"
 
-      - run: echo 'STACKCTL_FILTER=${{ needs.changes.outputs.files }}' >>"$GITHUB_ENV"
-
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: us-east-1
@@ -113,4 +111,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
 
       - if: ${{ needs.changes.outputs.files != '' }}
-        run: stackctl deploy --save-change-sets /tmp/changes --no-confirm --clean
+        run: >-
+          stackctl --filter '${{ needs.changes.outputs.files }}'
+            deploy --save-change-sets /tmp/changes --no-confirm --clean

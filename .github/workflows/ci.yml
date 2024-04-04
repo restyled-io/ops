@@ -5,6 +5,10 @@ on:
   push:
     branches: main
 
+permissions:
+  id-token: write
+  contents: read
+
 env:
   LOG_COLOR: always
   STACKCTL_DIRECTORY: cg-app

@@ -1,6 +1,14 @@
 name: CI
 
-on: push
+on:
+  pull_request:
+  push:
+    branches: main
+
+env:
+  LOG_COLOR: always
+  STACKCTL_DIRECTORY: cg-app
+  STACKCTL_VERSION: 1.6.0.0
 
 jobs:
   validate:
@@ -13,20 +21,87 @@ jobs:
       - run: pip install cfn-lint
       - run: cfn-lint
 
-  sync:
-    if: ${{ github.ref == 'refs/heads/main' }}
-    needs: [validate]
-
+  changes:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
-      - uses: restyled-io/aws-s3-sync-by-hash-action@v1
+      - id: filter
+        uses: dorny/paths-filter@v2
         with:
-          root: cg-app
-          bucket: cg-app-cfstack-bucket
-          delete: true
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
-          AWS_DEFAULT_REGION: us-east-1
+          working-directory: ${{ env.STACKCTL_DIRECTORY }}
+          filters: |
+            yamls:
+              - 'stacks/**/*.yaml'
+              - 'templates/**/*.json'
+              - 'templates/**/*.yaml'
+          list-files: csv
+    outputs:
+      files: ${{ steps.filter.outputs.yamls_files }}
+
+  comment-changes:
+    if: ${{ github.ref != 'refs/heads/main' }}
+
+    needs: changes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: pbrisbin/setup-tool-action@v2
+        with:
+          name: stackctl
+          version: ${{ env.STACKCTL_VERSION }}
+          url: "https://github.com/freckle/{name}/releases/download/v{version}/{name}-{arch}-{os}.{ext}"
+          arch: x86_64
+          os-darwin: osx
+          subdir: "{name}"
+
+      - run: echo 'STACKCTL_FILTER=${{ needs.changes.outputs.files }}' >>"$GITHUB_ENV"
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.aws_access_key_id }}
+          aws-secret_access-key: ${{ secrets.aws_secret_access_key }}
+          aws-default-region: us-east-1
+
+      - if: ${{ needs.changes.outputs.files != '' }}
+        run: stackctl changes --format pr /tmp/changes.md
+
+      - id: prep
+        run: |
+          tmp=$(mktemp)
+          echo "message-path=$tmp" >>"$GITHUB_OUTPUT"
+
+          find /tmp/changes -name 'changes.md' -exec cat {} + | tee "$tmp"
+
+          if [[ ! -s "$tmp" ]]; then
+            echo 'No Stack changes produced by this PR' | tee "$tmp"
+          fi
+
+      - uses: mshick/add-pr-comment@v2
+        with:
+          message-path: ${{ steps.prep.outputs.message-path }}
+          refresh-message-position: "true"
+
+  deploy-changes:
+    if: ${{ github.ref == 'refs/heads/main' }}
+
+    needs: changes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: pbrisbin/setup-tool-action@v2
+        with:
+          name: stackctl
+          version: ${{ env.STACKCTL_VERSION }}
+          url: "https://github.com/freckle/{name}/releases/download/v{version}/{name}-{arch}-{os}.{ext}"
+          arch: x86_64
+          os-darwin: osx
+          subdir: "{name}"
+
+      - run: echo 'STACKCTL_FILTER=${{ needs.changes.outputs.files }}' >>"$GITHUB_ENV"
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.aws_access_key_id }}
+          aws-secret_access-key: ${{ secrets.aws_secret_access_key }}
+          aws-default-region: us-east-1
+
+      - if: ${{ needs.changes.outputs.files != '' }}
+        run: stackctl deploy --save-change-sets /tmp/changes --no-confirm --clean

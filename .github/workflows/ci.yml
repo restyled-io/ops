@@ -31,9 +31,9 @@ jobs:
           working-directory: ${{ env.STACKCTL_DIRECTORY }}
           filters: |
             yamls:
-              - 'stacks/**/*.yaml'
-              - 'templates/**/*.json'
-              - 'templates/**/*.yaml'
+              - 'cg-app/stacks/**/*.yaml'
+              - 'cg-app/templates/**/*.json'
+              - 'cg-app/templates/**/*.yaml'
           list-files: csv
     outputs:
       files: ${{ steps.filter.outputs.yamls_files }}

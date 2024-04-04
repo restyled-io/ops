@@ -8,6 +8,7 @@ on:
 permissions:
   id-token: write
   contents: read
+  pull-request: write
 
 env:
   LOG_COLOR: always

@@ -66,9 +66,8 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-region: us-east-1
-          aws-access-key-id: ${{ secrets.aws_access_key_id }}
-          aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
+          role-to-assume: ${{ vars.AWS_ROLE }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       - if: ${{ needs.changes.outputs.files != '' }}
         run: stackctl changes --format pr /tmp/changes.md
@@ -108,9 +107,8 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-region: us-east-1
-          aws-access-key-id: ${{ secrets.aws_access_key_id }}
-          aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
+          role-to-assume: ${{ vars.AWS_ROLE }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       - if: ${{ needs.changes.outputs.files != '' }}
         run: stackctl  deploy --save-change-sets /tmp/changes --no-confirm --clean

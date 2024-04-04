@@ -6,6 +6,6 @@ Parameters:
   - Name: Name
     Value: restyler
   - Name: RetentionInDays
-    Value: 30
+    Value: 14
 
 # Increment to deploy template-only changes: v1

@@ -7,5 +7,4 @@ Parameters:
     Value: restyler
   - Name: RetentionInDays
     Value: 14
-
 # Increment to deploy template-only changes: v1

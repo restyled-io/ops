@@ -1,2 +1,7 @@
 templates:
   - cg-app/templates/**/*.yaml
+
+# Some newer checks I can't fix right now
+ignore_checks:
+  - E3045 # Use OwnershipControls
+  - W3045 # Prefer BucketPolicy

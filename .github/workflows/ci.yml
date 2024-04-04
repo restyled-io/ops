@@ -12,6 +12,7 @@ permissions:
 
 env:
   LOG_COLOR: always
+  STACKCTL_CHANGES: /tmp/changes.md
   STACKCTL_DIRECTORY: cg-app
   STACKCTL_VERSION: 1.6.0.0
 
@@ -76,22 +77,16 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
 
       - if: ${{ needs.changes.outputs.files != '' }}
-        run: stackctl changes --format pr /tmp/changes.md
+        run: stackctl changes --format pr "$STACKCTL_CHANGES"
 
-      - id: prep
-        run: |
-          tmp=$(mktemp)
-          echo "message-path=$tmp" >>"$GITHUB_OUTPUT"
-
-          find /tmp/changes -name 'changes.md' -exec cat {} + | tee "$tmp"
-
-          if [[ ! -s "$tmp" ]]; then
-            echo 'No Stack changes produced by this PR' | tee "$tmp"
+      - run: |
+          if [[ ! -s "$STACKCTL_CHANGES" ]]; then
+            echo 'No Stack changes produced by this PR' | tee "$STACKCTL_CHANGES"
           fi
 
       - uses: mshick/add-pr-comment@v2
         with:
-          message-path: ${{ steps.prep.outputs.message-path }}
+          message-path: ${{ env.STACKCTL_CHANGES }}
           refresh-message-position: "true"
 
   deploy-changes:

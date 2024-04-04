@@ -40,8 +40,8 @@ jobs:
           {
             echo 'files<<EOF'
             sed 's%${{ env.STACKCTL_DIRECTORY }}/%%g' <<'EOM'
-            ${{ steps.filter.outputs.yamls_files }}
-            EOM
+          ${{ steps.filter.outputs.yamls_files }}
+          EOM
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
     outputs:

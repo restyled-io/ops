@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: restyled-io/aws-s3-sync-by-hash-action@main
+      - uses: restyled-io/aws-s3-sync-by-hash-action@v1
         with:
           root: cg-app
           bucket: cg-app-cfstack-bucket

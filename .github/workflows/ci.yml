@@ -114,4 +114,39 @@ jobs:
 
       - if: ${{ needs.changes.outputs.files != '' }}
         working-directory: cg-app
-        run: stackctl deploy --no-confirm --clean
+        run: |
+          stackctl deploy --save-change-sets /tmp/changes --no-confirm --clean
+
+          # If there were resourceChange, this will output (e.g.):
+          #
+          #       1 Add
+          #      22 Modify
+          #
+          # Otherwise, it outputs nothing.
+          cat /tmp/changes/*.json |
+            jq --raw-output '.changes[].resourceChange.action | select(.)' |
+            sort | uniq -c > changes.txt
+
+          {
+            if [[ -s changes.txt ]]; then
+              echo "changes<<EOM"
+              cat changes.txt
+              echo "EOM"
+            fi
+          } >>"$GITHUB_OUTPUT"
+
+      - if: always
+        uses: zulip/github-actions-zulip/send-message@v1
+        with:
+          api-key: ${{ secrets.ZULIP_API_KEY }}
+          email: ${{ secrets.ZULIP_EMAIL }}
+          organization-url: ${{ secrets.ZULIP_ORGANIZATION_URL }}
+          to: 'core team'
+          type: 'stream'
+          topic: 'Infra Deployments'
+          content: |
+            ${{ job.status == 'success' && ':check' || ':warning:' }} ${{ job.status }}
+
+            ```
+            ${{ steps.deploy.outputs.changes || 'No changes' }}
+            ```

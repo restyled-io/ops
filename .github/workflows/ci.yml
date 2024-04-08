@@ -135,7 +135,7 @@ jobs:
             fi
           } >>"$GITHUB_OUTPUT"
 
-      - if: always
+      - if: ${{ always() }}
         uses: zulip/github-actions-zulip/send-message@v1
         with:
           api-key: ${{ secrets.ZULIP_API_KEY }}

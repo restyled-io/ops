@@ -114,6 +114,8 @@ jobs:
 
       - if: ${{ needs.changes.outputs.files != '' }}
         working-directory: cg-app
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           stackctl deploy --save-change-sets /tmp/changes --no-confirm --clean
 
@@ -128,11 +130,18 @@ jobs:
             sort | uniq -c > changes.txt
 
           {
+            echo "slack-message<<EOM"
             if [[ -s changes.txt ]]; then
-              echo "changes<<EOM"
+              echo "```"
               cat changes.txt
-              echo "EOM"
+              echo "```"
+            else
+              echo "No changes"
             fi
+
+            echo
+            $(gh run view "${{ github.run_id }}" --json jobs --jq ".jobs[] | select(.name == \"${{ github.job }}\") | .url"
+            echo "EOM"
           } >>"$GITHUB_OUTPUT"
 
       - if: ${{ always() }}
@@ -145,8 +154,6 @@ jobs:
           type: 'stream'
           topic: 'Infra Deployments'
           content: |
-            ${{ job.status == 'success' && ':check' || ':warning:' }} ${{ job.status }}
+            ${{ job.status == 'success' && ':check:' || ':warning:' }} `restyled-io/ops` deployed
 
-            ```
-            ${{ steps.deploy.outputs.changes || 'No changes' }}
-            ```
+            ${{ steps.deploy.outputs.slack-message }}

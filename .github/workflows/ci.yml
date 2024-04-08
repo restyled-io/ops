@@ -114,23 +114,21 @@ jobs:
 
       - if: ${{ needs.changes.outputs.files != '' }}
         working-directory: cg-app
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           stackctl deploy --save-change-sets /tmp/changes --no-confirm --clean
 
-          # If there were resourceChange, this will output (e.g.):
-          #
-          #       1 Add
-          #      22 Modify
-          #
-          # Otherwise, it outputs nothing.
+      - if: ${{ always() }}
+        id: notification
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
           cat /tmp/changes/*.json |
             jq --raw-output '.changes[].resourceChange.action | select(.)' |
-            sort | uniq -c > changes.txt
+            sort | uniq -c > changes.txt || true
 
           {
             echo "slack-message<<EOM"
+
             if [[ -s changes.txt ]]; then
               echo "```"
               cat changes.txt
@@ -140,7 +138,7 @@ jobs:
             fi
 
             echo
-            $(gh run view "${{ github.run_id }}" --json jobs --jq ".jobs[] | select(.name == \"${{ github.job }}\") | .url"
+            gh run view "${{ github.run_id }}" --json jobs --jq ".jobs[] | select(.name == \"${{ github.job }}\") | .url"
             echo "EOM"
           } >>"$GITHUB_OUTPUT"
 
@@ -156,4 +154,4 @@ jobs:
           content: |
             ${{ job.status == 'success' && ':check:' || ':warning:' }} `restyled-io/ops` deployed
 
-            ${{ steps.deploy.outputs.slack-message }}
+            ${{ steps.notification.outputs.slack-message }}

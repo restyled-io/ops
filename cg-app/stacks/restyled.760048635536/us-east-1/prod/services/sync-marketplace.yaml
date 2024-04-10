@@ -16,6 +16,6 @@ Parameters:
   - Name: ScheduleExpression
     Value: rate(5 minutes)
   - Name: RestyledImage
-    Value: restyled/restyled.io:9d0d4c0
+    Value: restyled/restyled.io:6e8e5c8
 
 # Increment to deploy template-only changes: v5

@@ -4,4 +4,4 @@ Parameters:
   - Name: LogDNACloudWatchVersion
     Value: v2.2.1
 
-# Increment to deploy template-only changes: v3
+# Increment to deploy template-only changes: v4

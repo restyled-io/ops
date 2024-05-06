@@ -9,10 +9,8 @@ Parameters:
     Default: infra.restyled.io
   FunctionRuntime:
     Type: String
-    Default: python3.8
   FunctionHandler:
     Type: String
-    Default: main.handler
   FunctionTimeout:
     Type: Number
     Default: 30

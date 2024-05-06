@@ -11,5 +11,3 @@ Parameters:
     Value: 200
   - Name: QueueDepthPeriod
     Value: 120
-
-# Increment to deploy template-only changes: v4

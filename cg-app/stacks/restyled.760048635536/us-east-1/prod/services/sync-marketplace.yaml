@@ -17,5 +17,3 @@ Parameters:
     Value: rate(5 minutes)
   - Name: RestyledImage
     Value: restyled/restyled.io:0c53559
-
-# Increment to deploy template-only changes: v5

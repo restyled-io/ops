@@ -7,5 +7,3 @@ Tags:
 Parameters:
   - Name: Environment
     Value: prod
-
-# Increment to deploy template-only changes: v1

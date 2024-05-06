@@ -11,5 +11,3 @@ Parameters:
     Value: src/record-metrics/72cedb92d9dd16fa36588cf788593434b37a3def.zip
   - Name: ScheduleExpression
     Value: rate(1 minute)
-
-# Increment to deploy template-only changes: v1

@@ -4,7 +4,7 @@ Parameters:
   - Name: FunctionName
     Value: record-metrics
   - Name: FunctionRuntime
-    Value: python3.12
+    Value: python3.9
   - Name: FunctionHandler
     Value: main.handler
   - Name: FunctionSourceKey

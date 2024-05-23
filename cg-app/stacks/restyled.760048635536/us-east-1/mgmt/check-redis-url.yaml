@@ -1,15 +1,9 @@
 Template: serverless.yaml
 
 Parameters:
-  - Name: FunctionName
-    Value: check-redis-url
-  - Name: FunctionSourceKey
-    Value: src/check-redis-url/1e4f65f4f64a41abc6bd65347b11e2a72b0cc182.zip
-  - Name: FunctionRuntime
-    Value: nodejs18.x
-  - Name: FunctionHandler
-    Value: index.handler
-  - Name: FunctionRole
-    Value: check-redis-url
-  - Name: ScheduleExpression
-    Value: rate(10 minutes)
+  FunctionName: check-redis-url
+  FunctionSourceKey: src/check-redis-url/1e4f65f4f64a41abc6bd65347b11e2a72b0cc182.zip
+  FunctionRuntime: nodejs18.x
+  FunctionHandler: index.handler
+  FunctionRole: check-redis-url
+  ScheduleExpression: rate(10 minutes)

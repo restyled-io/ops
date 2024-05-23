@@ -4,6 +4,10 @@ Tags:
   - Key: Environment
     Value: prod
 
+  # Temporarily avoid any updates on this resource
+  - Key: "CloudGenesis:stack-file"
+    Value: "stacks/restyled.760048635536/us-east-1/prod/alarms.yaml"
+
 Parameters:
   - Name: Environment
     Value: prod

@@ -22,3 +22,6 @@ Parameters:
 Tags:
   Environment: prod
   App: restyle-machines
+
+  # Temporarily avoid any updates on this resource
+  "CloudGenesis:stack-file": "stacks/restyled.760048635536/us-east-1/prod/services/restyle-machines.yaml"

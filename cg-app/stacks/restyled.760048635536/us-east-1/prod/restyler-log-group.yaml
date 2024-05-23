@@ -1,9 +1,6 @@
 Template: log-group.yaml
 
 Parameters:
-  - Name: Environment
-    Value: prod
-  - Name: Name
-    Value: restyler
-  - Name: RetentionInDays
-    Value: 14
+  Environment: prod
+  Name: restyler
+  RetentionInDays: 14

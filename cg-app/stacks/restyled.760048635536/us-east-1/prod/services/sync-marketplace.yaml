@@ -1,19 +1,12 @@
 Template: services/fargate/backend.yaml
 
-Tags:
-  - Key: Environment
-    Value: prod
-  - Key: App
-    Value: sync-marketplace
-
 Parameters:
-  - Name: Environment
-    Value: prod
-  - Name: Name
-    Value: sync-marketplace
-  - Name: Command
-    Value: sync-marketplace
-  - Name: ScheduleExpression
-    Value: rate(5 minutes)
-  - Name: RestyledImage
-    Value: restyled/restyled.io:0c53559
+  Environment: prod
+  Name: sync-marketplace
+  Command: sync-marketplace
+  ScheduleExpression: rate(5 minutes)
+  RestyledImage: restyled/restyled.io:0c53559
+
+Tags:
+  Environment: prod
+  App: sync-marketplace

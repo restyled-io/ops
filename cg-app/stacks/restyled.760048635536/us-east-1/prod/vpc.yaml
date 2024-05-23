@@ -1,13 +1,10 @@
 Template: mgmt/vpc.yaml
 
+Parameters:
+  Environment: prod
+
 Tags:
-  - Key: Environment
-    Value: prod
+  Environment: prod
 
   # Temporarily avoid any updates on this resource
-  - Key: "CloudGenesis:stack-file"
-    Value: "stacks/restyled.760048635536/us-east-1/prod/vpc.yaml"
-
-Parameters:
-  - Name: Environment
-    Value: prod
+  "CloudGenesis:stack-file": "stacks/restyled.760048635536/us-east-1/prod/vpc.yaml"

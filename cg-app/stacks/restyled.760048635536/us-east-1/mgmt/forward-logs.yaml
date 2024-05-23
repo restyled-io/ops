@@ -1,5 +1,4 @@
 Template: mgmt/forward-logs.yaml
 
 Parameters:
-  - Name: LogDNACloudWatchVersion
-    Value: v2.2.1
+  LogDNACloudWatchVersion: v2.2.1

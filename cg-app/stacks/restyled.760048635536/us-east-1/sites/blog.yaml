@@ -1,9 +1,6 @@
 Template: static-website.yaml
 
 Parameters:
-  - Name: WildcardCertId
-    Value: 156fe9a9-b62e-48c5-820d-6e48231b9b7b
-  - Name: Alias
-    Value: blog.restyled.io
-  - Name: ManagementGroupName
-    Value: RestyledCI
+  WildcardCertId: 156fe9a9-b62e-48c5-820d-6e48231b9b7b
+  Alias: blog.restyled.io
+  ManagementGroupName: RestyledCI

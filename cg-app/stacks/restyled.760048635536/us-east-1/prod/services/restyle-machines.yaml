@@ -1,6 +1,5 @@
 Template: services/ec2/asg.yaml
 
-
 Parameters:
   Environment: prod
   Name: restyle-machines

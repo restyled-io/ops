@@ -1,9 +1,9 @@
 # Restyled (Git)Ops
 
 CloudFormation templates for all Restyled infrastructure, deployed using
-[CloudGenesis][].
+[Stackctl][].
 
-[CloudGenesis]: https://github.com/LifeWay/CloudGenesis
+[stackctl]: https://github.com/freckle/stackctl#readme
 
 ---
 

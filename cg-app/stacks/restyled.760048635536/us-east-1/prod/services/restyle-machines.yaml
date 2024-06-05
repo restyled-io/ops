@@ -4,7 +4,7 @@ Parameters:
   Environment: prod
   Name: restyle-machines
   InstanceType: t2.small
-  UserDataSourceKey: src/restyle-machines/user-data/327e5aeed6e113f39567afe4d09fe022ea3b9bd2
+  UserDataSourceKey: src/restyle-machines/user-data/3251db5141831db18825a81b35924f6edb38c0f3
 
   DesiredCapacity: 1
   ScaleUpThreshold: 30

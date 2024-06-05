@@ -4,7 +4,7 @@ Parameters:
   Environment: prod
   Name: restyle-machines
   InstanceType: t2.small
-  UserDataSourceKey: src/restyle-machines/user-data/737b4ec724e2710acb34956a960d31fb0edbfe1f
+  UserDataSourceKey: src/restyle-machines/user-data/327e5aeed6e113f39567afe4d09fe022ea3b9bd2
 
   DesiredCapacity: 1
   ScaleUpThreshold: 30
@@ -24,4 +24,4 @@ Tags:
   App: restyle-machines
 
   # Temporarily avoid any updates on this resource
-  "CloudGenesis:stack-file": "stacks/restyled.760048635536/us-east-1/prod/services/restyle-machines.yaml"
+  CloudGenesis:stack-file: stacks/restyled.760048635536/us-east-1/prod/services/restyle-machines.yaml

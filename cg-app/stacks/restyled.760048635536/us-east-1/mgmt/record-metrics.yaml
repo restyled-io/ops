@@ -4,5 +4,5 @@ Parameters:
   FunctionName: record-metrics
   FunctionRuntime: python3.9
   FunctionHandler: main.handler
-  FunctionSourceKey: src/record-metrics/72cedb92d9dd16fa36588cf788593434b37a3def.zip
+  FunctionSourceKey: src/record-metrics/5a9e27d141b712dffedeccd945f2539df0406c66.zip
   ScheduleExpression: rate(1 minute)

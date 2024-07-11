@@ -88,8 +88,6 @@ Resources:
       SecurityGroupEgress:
         - CidrIp: 0.0.0.0/0
           IpProtocol: "-1"
-          FromPort: -1
-          ToPort: -1
 
   LogGroup:
     Type: AWS::Logs::LogGroup

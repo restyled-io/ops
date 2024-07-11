@@ -68,8 +68,6 @@ Resources:
       CidrIp: 0.0.0.0/0
       GroupId: !GetAtt SecurityGroup.GroupId
       IpProtocol: "-1"
-      FromPort: -1
-      ToPort: -1
 
   Service:
     Condition: HasService

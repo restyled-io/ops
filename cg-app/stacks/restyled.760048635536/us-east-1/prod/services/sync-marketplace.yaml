@@ -5,7 +5,7 @@ Parameters:
   Name: sync-marketplace
   Command: sync-marketplace
   ScheduleExpression: rate(5 minutes)
-  RestyledImage: restyled/restyled.io:0c53559
+  RestyledImage: restyled/restyled.io:4b22351
 
 Tags:
   Environment: prod
